@@ -1,4 +1,5 @@
 class ActivityRegistrationsController < ApplicationController
+before_action :authenticate_user!
   def register
     @activity = Activity.find(params[:activity_id])
     @activity_registration = @activity.activity_registrations.build(user: current_user)
