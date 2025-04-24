@@ -3,10 +3,11 @@ require 'rails_helper'
 RSpec.describe Event, type: :model do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to validate_presence_of(:email) }
+    it { is_expected.to validate_presence_of(:responsable) }
     it { is_expected.to validate_presence_of(:local) }
     it { is_expected.to validate_presence_of(:period_start) }
     it { is_expected.to validate_presence_of(:period_end) }
-    it { is_expected.to validate_presence_of(:banner) }
   end
 
   describe 'associations' do

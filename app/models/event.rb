@@ -11,8 +11,7 @@ class Event < ApplicationRecord
   enum status: { registrations_open: "registrations_open", event_in_progress: "event_in_progress", event_closed: "event_closed",
   cancelled: "cancelled" }
 
-  validates :name, :local, :period_start, :period_end, presence: true
-  validates :banner, attached: true, content_type: [ :png, :jpg, :jpeg ]
+  validates :name, :local, :email, :responsable, :period_start, :period_end, presence: true
   validate :period_start_cannot_be_in_past, :period_end_must_be_after_period_start
 
   private
@@ -26,7 +25,7 @@ class Event < ApplicationRecord
 
   # Ensures period_end > period_start
   def period_end_must_be_after_period_start
-    if period_end.present? && period_start.present? && period_end <= period_start
+    if period_end.present? && period_start.present? && period_end < period_start
       errors.add(:period_end, "Deve ser depois do início do evento")
     end
   end
