@@ -15,10 +15,10 @@ module Admin
         before(:each) do
           sign_in create(:user)
         end
-        
+
         it "assigns @registrations" do
           get :index, params: { event_id: event.id }
-          expect(assigns(:registrations)).to eq([registration])
+          expect(assigns(:registrations)).to eq([ registration ])
         end
 
         it "renders the index template" do
@@ -94,7 +94,7 @@ module Admin
         before(:each) do
           sign_in create(:user)
         end
-        
+
         it 'returns a successful response' do
           post :create, params: { event_id: event.id, registration: registration_params }
           expect(response).to redirect_to(admin_event_registration_path(event, assigns(:registration)))

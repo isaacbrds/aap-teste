@@ -2,7 +2,7 @@ module Admin
   class CertificatesController < BaseController
     before_action :authenticate_user!
     before_action :load_event
-    before_action :load_certificate, only: [:show]
+    before_action :load_certificate, only: [ :show ]
     # GET /certificates
     def index
       @certificates = @event.certificates

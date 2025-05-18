@@ -6,8 +6,8 @@ class Registration < ApplicationRecord
 
   validates_presence_of :status
   scope :for_user_and_event, ->(user, event) { where(user: user, event: event) }
-  #scope :for_event, ->(event) { where(event: event) }
-  #scope :for_user, ->(user) { where(user: user) }
+  # scope :for_event, ->(event) { where(event: event) }
+  # scope :for_user, ->(user) { where(user: user) }
 
   after_update :generate_certificate
   private
