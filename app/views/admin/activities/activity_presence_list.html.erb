@@ -1,13 +1,13 @@
-<div id="content-wrapper" class="d-flex flex-column mt-3">      
+<div id="content-wrapper" class="d-flex flex-column mt-3">
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Lista de Frequência de Atividades</h5>
       <h6 class="card-subtitle mb-2 text-body-secondary">Atividade: <%= @activity.name %></h6>
-      <p class="card-text"></p>    
+      <p class="card-text"></p>
     </div>
-  </div>        
-  
-  <div class="row mt-2">        
+  </div>
+
+  <div class="row mt-2">
     <div class="col-xl-3 col-md-6 mb-4">
       <div class="card border-left-primary h-100 py-2">
         <div class="card-body">
@@ -40,35 +40,34 @@
       </div>
     </div>
   </div>
-  
-  <% if !@activity_presence_list.any? %>  
+
+  <% if !@activity_presence_list.any? %>
     <div class="alert alert-warning" role="alert">Ainda não há inscritos.</div>
   <% else %>
     <div class="table-responsive">
-      <table class="table table-hover">      
-        <thead>     
+      <table class="table table-hover">
+        <thead>
           <tr>
             <th scope="col">N.° Inscrição</th>
             <th scope="col">Nome</th>
             <th scope="col">Assinatura</th>
           </tr>
         </thead>
-        <tbody>      
+        <tbody>
           <% @activity_presence_list.each do |activity|   %>
             <tr>
               <th scope="row"><%= activity.id %></th>
               <td><%= activity.email %></td>
               <td></td>
-            </tr>     
+            </tr>
           <% end %>
         </tbody>
       </table>
        <div class="d-flex justify-content-center">
-        
       </div>
     </div>
-  <% end %> 
-</div>  
+  <% end %>
+</div>
 
 
 

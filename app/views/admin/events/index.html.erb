@@ -55,6 +55,12 @@
                    <%= link_to presence_list_admin_event_path(event), class: 'btn btn-warning btn-sm me-2' do %>
                     <i class="bi bi-pencil-square">Lista de inscritos</i>
                   <% end %>
+                   <%= link_to admin_event_registrations_path(event), class: 'btn btn-info btn-sm me-2' do %>
+                    <i class="bi bi-eye">Detalhes dos inscritos</i>
+                  <% end %>
+                  <%= link_to admin_event_certificates_path(event), class: 'btn btn-success btn-sm me-2' do %>
+                    <i class="bi bi-mortarboard">Lista de Certificados</i>
+                  <% end %>
                 </div>
               </td>
             </tr>

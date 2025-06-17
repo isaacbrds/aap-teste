@@ -7,6 +7,7 @@ RSpec.describe Activity, type: :model do
     it { is_expected.to validate_presence_of(:speaker) }
     it { is_expected.to validate_presence_of(:local) }
     it { is_expected.to validate_presence_of(:period_start) }
+    it { is_expected.to validate_presence_of(:period_end) }
     it { is_expected.to validate_presence_of(:certificate_hours) }
   end
 

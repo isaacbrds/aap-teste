@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     resources :activities, only: %i[ index show ] do
       post "register", to: "activity_registrations#register"
     end
+    resources :certificates, only: %i[ show ]
 
     member do
       get :registrations
@@ -17,6 +18,12 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :users
     resources :events do
+      resources :registrations
+      resources :certificates, only: %i[ index show ] do
+        member do
+          get :download
+        end
+      end
       member do
         get :presence_list
       end

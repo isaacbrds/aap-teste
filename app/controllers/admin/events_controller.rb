@@ -3,7 +3,7 @@ module Admin
     PERMITED_PARAMS = [
       :name, :local, :period_start, :period_end, :email, :responsable,
       :txtEnter, :txtAbout, :comission, :primaryColor,
-      :secondaryColor, :status, :banner, :user_id].freeze
+      :secondaryColor, :status, :banner, :user_id ].freeze
 
     before_action :authenticate_user!
     before_action :load_event, only: [ :show, :edit, :update, :destroy, :presence_list ]

@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="row mt-4">
+    <div class="d-flex justify-content-around">
+        <h3>Detalhes dos Inscritos no Evento <%= @event.name %></h3>
+      <%= link_to new_admin_event_registration_path, class: 'btn btn-primary' do %>
+        <i class="bi bi-plus-square"></i>
+      <% end %>
+    </div>
+
+    <table class="table table-striped table-bordered mt-3">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Email</th>
+          <th scope="col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @registrations.each do |registration| %>
+        <tr>
+          <td><%= registration.id %></td>
+          <td><%= registration.user.email %></td>
+          <td>
+            <%= link_to admin_event_registration_path(@event, registration), class: 'btn btn-info btn-sm me-2' do %>
+                  <i class="bi bi-eye"></i>
+                  <% end %>
+            <%= link_to edit_admin_event_registration_path(@event, registration), class: 'btn btn-warning btn-sm me-2' do %>
+                    <i class="bi bi-pencil-square"></i>
+                  <% end %>
+            <%= link_to admin_event_registration_path(@event, registration), data: { turbo_confirm: 'Tem certeza?', turbo_method: :delete }, class: 'btn btn-danger btn-sm' do %>
+                    <i class="bi bi-trash"></i>
+                  <% end %>
+          </td>
+        </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= link_to 'voltar' , admin_events_path, class: 'btn btn-secondary' %>
+</div>

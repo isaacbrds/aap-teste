@@ -158,6 +158,10 @@ textarea.form-control{
 
 @media (max-width: 1600px) and (min-width: 1441px) {
 
+    #sidebar-wrapper {
+      width: 16%;
+    }
+  
     #background-img{
       background: no-repeat url('back.jpeg') ;
       background-size: cover;
@@ -177,7 +181,9 @@ textarea.form-control{
 }
 
 @media (max-width: 1440px) and (min-width: 1369px) {
-
+  #sidebar-wrapper {
+      width: 18%;
+  }
   #background-img{
     background: no-repeat url('back.jpeg') ;
     background-size: cover;
@@ -198,6 +204,9 @@ textarea.form-control{
 
 
 @media (max-width: 1368px) and (min-width: 1281px)  {
+  #sidebar-wrapper {
+    width: 18.5%;
+  }
 
   #background-img{
     background: no-repeat url('back.jpeg') ;
@@ -219,6 +228,10 @@ textarea.form-control{
 
 @media (max-width: 1280px) and (min-width: 1025px) {
 
+  #sidebar-wrapper {
+      width: 20%;
+  }
+
   #background-img{
     background: no-repeat url('back.jpeg') ;
     background-size: cover;
@@ -234,7 +247,9 @@ textarea.form-control{
 }
 
 @media (max-width: 1024px) and (min-width: 801px) {
-
+  #sidebar-wrapper {
+      width: 25%;
+  }
   #background-img{
     background: no-repeat url('back.jpeg') ;
     background-size: cover;
@@ -254,6 +269,10 @@ textarea.form-control{
 }
 
 @media (max-width: 800px) and (min-width: 769px){
+  #sidebar-wrapper {
+      width: 28%;
+  }
+
   #background-img{
     background: radial-gradient(circle, rgba(24,136,44,1) 0%, rgba(2,83,16,1) 100%);
     min-height: 600px;
