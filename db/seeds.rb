@@ -296,19 +296,13 @@ Event.create!(
 Event.all.each do |event|
   # Criando 5 atividades para cada evento
   5.times do |i|
-    period_start = DateTime.now + [1, 2, 3, 4].sample.days
-period_end = period_start + [1, 2, 3, 4].sample.days
-
-# Ou se for em um hash/factory:
-
     Activity.create!(
       name: "Atividade #{i + 1} para #{event.name}",
       title: "Explorando Novas Fronteiras #{i + 1}",
-      period_start: period_start,
-      period_end: period_end,
+      period_start: DateTime.now + [ 1, 2, 3, 4 ].sample.days,
       speaker: [ "Dr. Ana Silva", "Prof. João Souza", "Eng. Carlos Costa", "Maria Oliveira", "Cláudia Pereira" ].sample,
       local: [ "Sala 101", "Auditório Principal", "Laboratório A", "Sala Virtual", "Praça de Eventos" ].sample,
-      certificate_hours: "#{[ 1, 2, 3, 4, 5 ].sample}",
+      certificate_hours: "#{[ 1, 2, 3, 4, 5 ].sample} horas",
       subscriptions_open: [ true, false ].sample,
       event: event # Associa a atividade ao evento correspondente
     )

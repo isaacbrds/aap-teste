@@ -18,7 +18,9 @@
   </head>
 
   <body>
-    <%= render "shared/admin_sidebar" %>
+    <% if current_user.admin? || current_user.manager? %>
+      <%= render "shared/admin_sidebar" %>
+    <% end %>
     <div id="page-content-wrapper">
       <div class="container-fluid">
         <%= render "shared/admin_navbar" %>

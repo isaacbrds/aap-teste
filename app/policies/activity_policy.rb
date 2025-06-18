@@ -18,10 +18,6 @@ class ActivityPolicy < ApplicationPolicy
     user.admin? || record.event.user_id == user.id
   end
 
-  def activity_presence_list?
-    user.admin? || record.event.user_id == user.id
-  end
-
   class Scope < ApplicationPolicy::Scope
     # NOTE: Be explicit about which records you allow access to!
     # def resolve
