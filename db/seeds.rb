@@ -310,8 +310,8 @@ end
 
 Event.all.each do |event|
   # Criando 5 atividades para cada evento
-  period_start = DateTime.now + [1, 2, 3, 4].sample.days
-  period_end = period_start + [1, 2, 3, 4].sample.days
+  period_start = DateTime.now + [ 1, 2, 3, 4 ].sample.days
+  period_end = period_start + [ 1, 2, 3, 4 ].sample.days
   5.times do |i|
     Activity.create!(
       name: "Atividade #{i + 1} para #{event.name}",
