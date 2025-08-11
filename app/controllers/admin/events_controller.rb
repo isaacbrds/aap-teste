@@ -9,7 +9,9 @@ module Admin
     before_action :load_event, only: [ :show, :edit, :update, :destroy, :presence_list ]
 
     def index
-      @pagy, @events = pagy(Event.order(period_start: :desc))
+      @events = Event.all if current_user.admin?
+      @events = Event.where(user_id: current_user.id) if current_user.manager?
+      @pagy, @events = pagy(@events.order(period_start: :desc))
       @registration = current_user.registrations.new if current_user
     end
 
