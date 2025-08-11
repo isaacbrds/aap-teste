@@ -64,6 +64,8 @@ group :development, :test do
   gem "rails-controller-testing"
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+  gem 'database_cleaner-active_record'
+  gem 'pdf-reader'
 end
 
 group :development do

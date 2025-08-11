@@ -15,13 +15,13 @@ module Admin
     end
 
     def download
-    @certificate.calculate_hours
-    pdf = CertificateGeneratorService.new(@certificate).generate_pdf
+      @certificate.calculate_hours
+      pdf = CertificateGeneratorService.new(@certificate).generate_pdf
 
-    send_data pdf.render,
-              filename: "certificado_#{@certificate.certificate_number}.pdf",
-              type: "application/pdf",
-              disposition: "attachment"
+      send_data pdf.render,
+                filename: "certificado_#{@certificate.certificate_number}.pdf",
+                type: "application/pdf",
+                disposition: "attachment"
     end
 
     private

@@ -7,6 +7,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # Uncomment the line below in case you have `--require rails_helper` in the `.rspec` file
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
+require 'database_cleaner/active_record'
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
@@ -43,7 +44,28 @@ RSpec.configure do |config|
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false
+
+  # Configuração do Database Cleaner
+  config.before(:suite) do
+    # Limpa o banco de dados uma vez, antes de toda a suíte de testes rodar.
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each) do
+    # Define a estratégia a ser usada. `transaction` é a mais rápida.
+    DatabaseCleaner.strategy = :transaction
+  end
+
+  config.before(:each) do
+    # Inicia a estratégia de limpeza antes de cada teste.
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    # Finaliza a estratégia de limpeza depois de cada teste.
+    DatabaseCleaner.clean
+  end
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false

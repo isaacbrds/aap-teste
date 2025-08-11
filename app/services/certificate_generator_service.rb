@@ -7,7 +7,7 @@ class CertificateGeneratorService
   end
 
   def generate_pdf
-    Prawn::Document.new(page_size: [ 842, 595 ], margin: 50) do |pdf| # A4 landscape
+    pdf = Prawn::Document.new(page_size: [ 842, 595 ], margin: 50) do |pdf| # A4 landscape
       add_background_image(pdf)
       add_header(pdf)
       add_content(pdf)
@@ -15,6 +15,7 @@ class CertificateGeneratorService
       add_footer(pdf)
       add_border(pdf)
     end
+    pdf
   end
 
   private
@@ -25,7 +26,7 @@ class CertificateGeneratorService
 
     begin
       # Pega o caminho do arquivo
-      if Rails.env.development?
+      if Rails.env.development? || Rails.env.test?
         # Desenvolvimento: arquivo local
         image_path = @certificate.event.banner.blob.service.path_for(@certificate.event.banner.key)
       else
@@ -73,6 +74,7 @@ class CertificateGeneratorService
       text = "Participou do evento <b>#{@event.name}</b>, realizado no período de " \
             "#{I18n.l(@event.period_start, format: :long)} à #{I18n.l(@event.period_end, format: :long)}. "
       pdf.text text, align: :justify, inline_format: true
+
       pdf.move_down 50
     end
   end

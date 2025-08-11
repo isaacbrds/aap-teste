@@ -63,8 +63,8 @@ module Admin
     def activity_presence_list_pdf
       respond_to do |format|
         format.pdf do
-          pdf = AlunosPdf.new(@activity.users, @activity)
-          send_data pdf.render, filename: 'lista_de_presença.pdf', type: 'application/pdf', disposition: 'inline'
+          pdf = PresenceListGeneratorService.new(@activity.users, @activity).presence_list_generator
+          send_data pdf.render, filename: "lista_de_presença.pdf", type: "application/pdf", disposition: "inline"
         end
       end
     end
