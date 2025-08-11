@@ -7,6 +7,8 @@ class ActivitiesController < ApplicationController
 
   def index
     @activities = @event.activities.order(period_start: :desc)
+    @primary_color = @event.primaryColor
+    @secundary_color = @event.secondaryColor
   end
 
   def show;end

@@ -8,15 +8,27 @@
     <%= csp_meta_tag %>
 
     <%= yield :head %>
-
+<style>
+    :root {
+      --color-primary: <%= @primary_color %>;
+      --color-secondary: <%= @secundary_color %>;
+    }
+    body{
+      background: var(--color-primary)!important; color: #fff;
+    }
+    nav{
+      background-color: var(--color-secondary)!important;
+    }
+  </style>
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "custom", "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
-
+  
   <body>
     <div class="container">
         <% if @event.banner.attached? %>

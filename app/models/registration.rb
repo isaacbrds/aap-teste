@@ -12,6 +12,6 @@ class Registration < ApplicationRecord
   after_update :generate_certificate
   private
   def generate_certificate
-    Certificate.create(user: self.user, event: self.event) if self.status == "confirmed"
+    Certificate.create(user: self.user, event: self.event)
   end
 end
