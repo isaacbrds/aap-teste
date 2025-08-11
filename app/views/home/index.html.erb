@@ -1,9 +1,14 @@
 <section class="cta-section py-5 d-flex text-center bg-light align-items-center shadow-lg">
   <div class="container">
-    
-      <h1 class="display-4">Garanta o Sucesso do seu  Evento!</h1>
-      <p class="lead">Cadastre-o conosco e siga tranquilo e despreocupado.</p>
-      <%= link_to "Cadastrar-se Agora", new_user_registration_path, class:"btn btn-success btn-lg mt-3" %>
+      <% if current_user %>
+        <h1 class="display-4">Bem-vindo de volta</h1>
+        <p class="lead"> <%= current_user.email %>!</p>
+      <% else %>
+        <h1 class="display-4">Garanta o Sucesso do seu  Evento!</h1>
+        <p class="lead">Cadastre-o conosco e siga tranquilo e despreocupado.</p>
+        <%= link_to "Cadastrar-se Agora", new_user_registration_path, class:"btn btn-success btn-lg mt-3" %>
+      <% end %>
+      
       
     
   </div>
