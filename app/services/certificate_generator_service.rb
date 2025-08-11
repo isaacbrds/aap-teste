@@ -11,7 +11,7 @@ class CertificateGeneratorService
       add_background_image(pdf)
       add_header(pdf)
       add_content(pdf)
-      add_activities(pdf)
+
       add_footer(pdf)
       add_border(pdf)
     end
@@ -55,54 +55,26 @@ class CertificateGeneratorService
     pdf.move_down 30
     pdf.font_size 24
     pdf.text "CERTIFICADO", align: :center, style: :bold
-    pdf.move_down 20
+    pdf.move_down 30
 
     pdf.font_size 16
     pdf.text "Certificamos que", align: :center
-    pdf.move_down 10
+    pdf.move_down 30
 
     # Nome do participante
     pdf.font_size 16
     pdf.text @user.email, align: :center, style: :bold
-    pdf.move_down 20
+    pdf.move_down 60
   end
 
   def add_content(pdf)
     pdf.font_size 14
     pdf.span(700, position: :center) do
-      text = "participou do evento <b>#{@event.name}</b>, realizado no período de " \
-            "#{I18n.l(@event.period_start, format: :long)} a #{I18n.l(@event.period_end, format: :long)}, " \
-            "com carga horária total de <b>#{@certificate.hours} horas</b>."
+      text = "Participou do evento <b>#{@event.name}</b>, realizado no período de " \
+            "#{I18n.l(@event.period_start, format: :long)} à #{I18n.l(@event.period_end, format: :long)}. "
       pdf.text text, align: :justify, inline_format: true
-      pdf.move_down 30
+      pdf.move_down 50
     end
-  end
-
-  def add_activities(pdf)
-    return if @certificate.attended_activities.empty?
-    pdf.span(700, position: :center) do
-    pdf.font_size 12
-    pdf.text "Atividades participadas:", style: :bold
-    pdf.move_down 10
-
-    activities_data = [ [ "Atividade", "Palestrante", "Carga Horária" ] ]
-
-    @certificate.attended_activities.each do |activity|
-      activities_data << [
-        activity.name,
-        activity.speaker || "N/A",
-        "#{activity.certificate_hours}h"
-      ]
-    end
-
-      pdf.table(activities_data, header: true, width: pdf.bounds.width) do
-        row(0).font_style = :bold
-        cells.borders = [ :top, :bottom ]
-        cells.padding = [ 5, 10 ]
-      end
-    end
-
-    pdf.move_down 30
   end
 
   def add_footer(pdf)

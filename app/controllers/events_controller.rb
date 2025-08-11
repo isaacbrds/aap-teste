@@ -10,6 +10,8 @@ class EventsController < ApplicationController
 
   def show
     @registration = current_user.registrations.new if current_user
+    @primary_color = @event.primaryColor
+    @secundary_color = @event.secondaryColor
   end
 
   private

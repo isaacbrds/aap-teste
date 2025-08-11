@@ -19,7 +19,12 @@ Rails.application.routes.draw do
     resources :users
     resources :events do
       resources :registrations
-      resources :certificates, only: %i[ index show ]
+      resources :certificates, only: %i[ index show] do
+        member do
+          get 'download'
+        end
+      end
+      
       member do
         get :presence_list
       end
