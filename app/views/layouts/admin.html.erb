@@ -18,10 +18,9 @@
   </head>
 
   <body>
-    <%= render "shared/admin_sidebar" %>
     <div id="page-content-wrapper">
       <div class="container-fluid">
-        <%= render "shared/admin_navbar" %>
+        <%= render "shared/admin_sidebar" %>
           <% flash.each do |name, msg| %>
             <div class="alert alert-<%= name == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show">
               <%= msg %>

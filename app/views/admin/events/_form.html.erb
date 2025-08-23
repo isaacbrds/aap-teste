@@ -3,7 +3,7 @@
   <div class="row mt-4">
     <div class="card">
       <div class="card-header">
-        <h3 class="text-center font-weight-light my-4">Evento</h3>
+        <h3 class="text-center font-weight-light my-4"><i class="bi bi-calendar2-event me-2"></i>Detalhes do Evento</h3>
       </div>
       <div class="card-body">
           <div class="row">
@@ -11,20 +11,30 @@
               <%= form.input :name %>
             </div>
             <div class="col-12 col-md-6">
-              <%= form.input :local %>
+              <%= form.input :status, collection: { 'Inscrições Abertas': 'registrations_open',
+                                                    'Evento em andamento': 'event_in_progress',
+                                                    'Evento encerrado': 'event_closed',
+                                                    'Cancelado': 'cancelled' },
+                                                    include_blank: false %>
             </div>
-            <div class="col-12 col-md-6">
+            <hr>
+            <span><i class="bi bi-geo-alt me-2 "></i> Data e Local do Evento</span>
+            <div class="col-12 col-md-6 mt-3">
               <%= form.input :period_start, html5: true %>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 mt-3">
               <%= form.input :period_end, html5: true %>
             </div>
-
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-12 mb-3">
+              <%= form.input :local %>
+            </div>
+            <hr>
+            <span><i class="bi bi-info-circle me-2 "></i> Informações do Evento</span>
+            <div class="col-12 col-md-6 mt-3">
               <%= form.input :email %>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 mt-3">
               <%= form.input :responsable %>
             </div>
 
@@ -32,7 +42,7 @@
               <%= form.input :banner %>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 mb-3">
               <%= form.input :comission %>
             </div>
 
@@ -46,19 +56,13 @@
               <%= form.label :txtAbout %>
               <%= form.rich_text_area :txtAbout %>
             </div>
-
-            <div class="col-12 col-md-6">
+            <hr>
+            <span><i class="bi bi-gear me-2 "></i> Configurações do HotSite</span>
+            <div class="col-12 col-md-6 mt-3">
               <%= form.input :primaryColor %>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 mt-3">
               <%= form.input :secondaryColor %>
-            </div>
-            <div class="col-12 col-md-6">
-              <%= form.input :status, collection: { 'Inscrições Abertas': 'registrations_open',
-                                                    'Evento em andamento': 'event_in_progress',
-                                                    'Evento encerrado': 'event_closed',
-                                                    'Cancelado': 'cancelled' },
-                                                    include_blank: false %>
             </div>
           </div>
       </div>

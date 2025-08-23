@@ -1,8 +1,22 @@
 <!-- Sidebar -->
 <div class="bg-light border-right d-print-none" id="sidebar-wrapper">
   <div class="list-group list-group-flush">
-    <%= link_to 'Página Principal', admin_root_path, class: 'list-group-item list-group-item-action bg-light' %>
-    <%= link_to 'Eventos Cadastrados', admin_events_path, class: 'list-group-item list-group-item-action bg-light' %>
-    <%= link_to 'Usuários Cadastrados', admin_users_path, class: 'list-group-item list-group-item-action bg-light' %>
+    <a class="navbar-brand ps-3 d-flex align-items-center" href="/">
+      <%= image_tag "if-logo.png", height: "60" , class: "d-inline-block align-text-top" %>
+      <p>SISEVE </p>
+      
+    </a>
+    <hr>
+    <%= link_to  admin_root_path, class: 'list-group-item list-group-item-action bg-light' do %>
+      <i class="bi bi-columns-gap me-2"></i> Dashboard
+    <% end %>
+    <%= link_to  admin_events_path, class: 'list-group-item list-group-item-action bg-light' do %>
+      
+    <i class="bi bi-calendar2-event me-2"></i>  Eventos
+    <% end %>
+    <%= link_to admin_users_path, class: 'list-group-item list-group-item-action bg-light' do %>
+      <i class="bi bi-people me-2"></i>  Usuários
+    <% end %>
+    <hr>
   </div>
 </div>
