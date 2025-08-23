@@ -45,7 +45,9 @@ module Admin
       end
     end
 
-    def show;end
+    def show
+      @pagy, @activities = pagy(@event.activities.order(created_at: :desc))
+    end
 
     def edit
       authorize @event
