@@ -1,22 +1,43 @@
-<!-- Sidebar -->
-<div class="bg-light border-right d-print-none" id="sidebar-wrapper">
-  <div class="list-group list-group-flush">
-    <a class="navbar-brand ps-3 d-flex align-items-center" href="/">
-      <%= image_tag "if-logo.png", height: "60" , class: "d-inline-block align-text-top" %>
-      <p>SISEVE </p>
-      
-    </a>
-    <hr>
-    <%= link_to  admin_root_path, class: 'list-group-item list-group-item-action bg-light' do %>
-      <i class="bi bi-columns-gap me-2"></i> Dashboard
-    <% end %>
-    <%= link_to  admin_events_path, class: 'list-group-item list-group-item-action bg-light' do %>
-      
-    <i class="bi bi-calendar2-event me-2"></i>  Eventos
-    <% end %>
-    <%= link_to admin_users_path, class: 'list-group-item list-group-item-action bg-light' do %>
-      <i class="bi bi-people me-2"></i>  Usuários
-    <% end %>
-    <hr>
+<div class="col-md-3 col-lg-3 sidebar">
+  <div class="sidebar-logo">
+    <div class="d-flex">
+      <a href="<%= root_path %>">
+        <%= image_tag "if-logo.png", height: "110" , class: "d-inline-block" %>
+      </a>
+      <div class="d-flex flex-column justify-content-center">
+        <span class="fs-3 fw-bold">SISEVE</span>
+        <span>Sistema Integrado de Gerenciamento de Eventos</span>
+      </div>
+    </div>
+  </div>
+  <div>
+    <ul class="nav flex-column ms-4">
+      <li class="nav-item">
+        <%= link_to  admin_root_path, class: 'list-group-item list-group-item-action bg-light mt-3' do %>
+        <i class="bi bi-columns-gap me-2 bigger"></i> <span class="big">Dashboard</span>
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to  admin_events_path, class: 'list-group-item list-group-item-action bg-light mt-3' do %>
+        <i class="bi bi-calendar2-event me-2 bigger"></i>  <span class="big">Eventos</span>
+        <% end %>
+      </li>
+      <li class="nav-item">
+        <%= link_to admin_users_path, class: 'list-group-item list-group-item-action bg-light mt-3' do %>
+        <i class="bi bi-people me-2 bigger"></i>  <span class="big">Usuários</span>
+        <% end %>
+      </li>
+      <li class="nav-item">
+      </li>
+    </ul>
+  </div>
+  <div class="user-info mt-auto">
+    <div class="d-flex align-items-center">
+      <img src="https://via.placeholder.com/48" alt="Avatar do Usuário" class="user-avatar me-3">
+      <div>
+        <h6 class="mb-0"><%= current_user.email %></h6>
+        <span class="text-muted"><%= current_user.role %></span>
+      </div>
+    </div>
   </div>
 </div>

@@ -9,13 +9,13 @@
         </tr>
         <tr>
           <td>
-            <%= @registration.event.name %>
+            <%= t @registration.event.name %>
           </td>
           <td>
-            <%= @registration.user.email %>
+            <%= t @registration.user.email %>
           </td>
           <td>
-            <%= @registration.status %>
+            <%= t I18n.t("activerecord.attributes.registration.statuses.#{@registration.status}") %>
           </td>
         </tr>
     </table>
