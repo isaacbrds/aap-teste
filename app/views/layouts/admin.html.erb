@@ -18,17 +18,22 @@
   </head>
 
   <body>
-    <div id="page-content-wrapper">
-      <div class="container-fluid">
-        <%= render "shared/admin_sidebar" %>
-          <% flash.each do |name, msg| %>
-            <div class="alert alert-<%= name == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show">
-              <%= msg %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <% end %>
-          <%= yield %>
+    <div class="container-fluid">
+      <div class="row">
+          <%= render "shared/admin_sidebar" %>
+          <div class="col-md-9 col-lg-9">
+            <main class="p-4">
+              <% flash.each do |name, msg| %>
+                <div class="alert alert-<%= name == 'notice' ? 'success' : 'danger' %> alert-dismissible fade show">
+                  <%= msg %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            <% end %>
+
+            <%= yield %>
+          </main>
         </div>
       </div>
+    </div>
   </body>
 </html>

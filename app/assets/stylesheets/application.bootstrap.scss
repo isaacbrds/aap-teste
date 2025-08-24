@@ -2,20 +2,28 @@
 @import 'bootstrap-icons/font/bootstrap-icons';
 @import 'actiontext.css';
 
-#sidebar-wrapper {
-  width: 14%;
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100%;
-}
 
-#page-content-wrapper {
-  padding-left: 250px;
+.sidebar {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
-
-#wrapper.toggled #sidebar-wrapper {
-  margin-left: -250px;
+.user-info {
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+/* Estilos para a seção da logo */
+.sidebar-logo {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
 }
 
 #wrapper.toggled #page-content-wrapper {
@@ -37,6 +45,13 @@
 
 #eventos .col-md-4 .card:hover {
   transform: scale(1.05); /* Aumenta levemente o tamanho ao passar o mouse */
+}
+
+.bigger{
+  font-size: 2rem;
+}
+.big{
+  font-size: 1.25rem;
 }
 
 .banner-evento {
@@ -68,8 +83,67 @@
 }
 
 .card-header{
-  background-color: #5f933c;
+  background: radial-gradient(circle at center,
+#8fbc8f 0%,
+#3cb371 20%,
+#2e8b57 40%,
+#006400 60%,
+#000000 100%
+);
   color: white;
+}
+
+ .card-custom {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave */
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden; /* Garante que o gradiente não vaze */
+}
+.card-title-custom {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+.card-value {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #212529;
+}
+.card-icon-bg {
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.2; /* Opacidade para o efeito de "desfoque" */
+    filter: blur(20px); /* O efeito de desfoque */
+}
+/* Cores dos ícones e fundos */
+.icon-total-events {
+    color: #6a8cff;
+}
+.bg-total-events {
+    background-color: #6a8cff;
+}
+.icon-active-events {
+    color: #28a745;
+}
+.bg-active-events {
+    background-color: #28a745;
+}
+.icon-total-participants {
+    color: #9370db;
+}
+.bg-total-participants {
+    background-color: #9370db;
+}
+.icon-upcoming-events {
+    color: #ff9800;
+}
+.bg-upcoming-events {
+    background-color: #ff9800;
 }
 
 .absoluto{

@@ -6,6 +6,8 @@ pt-BR:
       property_standard_item: Característica do Imóvel
       property_type: Tipo de Imóvel
       user: Usuário
+      event: Evento
+      activity: Atividade
     attributes: &model_attributes
       property:
         contract_type: Tipo do Contrato
@@ -35,6 +37,56 @@ pt-BR:
         email: E-mail
         password: Senha
         password_confirmation: Confirme sua Senha
+        role: Perfil
+      event:
+        name: Nome
+        description: Descrição
+        period_start: Data de Início
+        period_end: Data de Término
+        location: Local
+        responsable: Responsável
+        Comission: Comissão
+        txtEnter: Descrição
+        txtAbout: Sobre o Evento
+        primaryColor: Cor Primária
+        secondaryColor: Cor Secundária
+        user: Usuário
+        status: Status do Evento
+        statuses:
+          registrations_open: "Inscrições Abertas"
+          event_in_progress: "Evento em Andamento"
+          event_closed: "Evento Encerrado"
+          cancelled: "Cancelado"
+        banner: Banner
+      activity:
+        name: Nome
+        title: Resumo da Atividade
+        description: Descrição
+        period_start: Início da Atividade
+        period_end: Fim da Atividade
+        local: Local
+        speaker: Palestrante
+        certificate_hours: Carga Horária
+        subscriptions_open: Inscrições Abertas
+        user: Usuário
+      registration:
+        user: Usuário
+        event: Evento
+        activity: Atividade
+        status: Status da Inscrição
+        statuses:
+          pending: Pendente
+          confirmed: Confirmada
+          cancelled: Cancelada
+      activity_registration:
+        user: Usuário
+        event: Evento
+        activity: Atividade
+        status: Status da Inscrição
+        statuses:
+          pending: Pendente
+          confirmed: Confirmada
+          cancelled: Cancelada
 
   activerecord:
     models:

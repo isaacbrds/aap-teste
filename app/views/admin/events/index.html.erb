@@ -11,11 +11,14 @@
   <div class="card mt-3">
     <h5 class="card-header"></h5>
     <div class="card-body">
-      <h5 class="card-title d-flex justify-content-between mb-3"><%= event.name %> <span class="badge text-bg-secondary"><%= event.status %></span></h5>
+      <h5 class="card-title d-flex justify-content-between mb-3"><%= event.name %> <span class="badge text-bg-secondary"> <%= I18n.t("activerecord.attributes.event.statuses.#{event.status}") %></span></h5>
       <p class="card-text"><%= event.txtEnter %></p>
       <p class="card-text"><span><i class="bi bi-clock me-2"></i><%= l(event.period_start, format: :long) %> </span></p>
       <p class="card-text"><span><i class="bi bi-geo-alt me-2"></i><%= event.local %> </span></p>
-      <p class="card-text"><span><i class="bi bi-people me-2"></i>Participantes </span></p>
+      <p class="card-text"><%= link_to admin_event_registrations_path(event), class: 'nav-link' do %>
+        <i class="bi bi-people me-2"></i>Participantes
+        <% end %>
+      </p>
     </div>
     <div class="card-footer d-flex justify-content-between">
       <small class="text-muted">Email do Responsável: <%= event.email %></small>
