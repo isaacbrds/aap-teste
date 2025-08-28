@@ -31,7 +31,13 @@ module Admin
 
     def update
       authorize @user
-      if @user.update user_params
+      update_params = user_params
+      if update_params[:password].blank?
+        update_params.delete(:password)
+        update_params.delete(:password_confirmation)
+      end
+
+      if @user.update update_params
         flash[:notice] = "Usuário atualizado com sucesso!"
         redirect_to admin_users_path
       else

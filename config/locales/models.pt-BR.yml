@@ -38,6 +38,11 @@ pt-BR:
         password: Senha
         password_confirmation: Confirme sua Senha
         role: Perfil
+        roles:
+          admin: Administrador
+          manager: Gerente
+          registered: Participante
+          organizer: Organizador
       event:
         name: Nome
         description: Descrição
