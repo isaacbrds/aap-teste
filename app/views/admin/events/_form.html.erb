@@ -3,7 +3,7 @@
   <div class="row mt-4">
     <div class="card">
       <div class="card-header">
-        <h3 class="text-center font-weight-light my-4"><i class="bi bi-calendar2-event me-2"></i>Detalhes do Evento</h3>
+        <h3 class="text-center font-weight-light my-4"><i class="bi bi-calendar2-event me-2"></i><% if @event.new_record? %> Novo Evento <% else %> Editar Evento <% end %></h3>
       </div>
       <div class="card-body">
           <div class="row">
@@ -59,10 +59,10 @@
             <hr>
             <span><i class="bi bi-gear me-2 "></i> Configurações do HotSite</span>
             <div class="col-12 col-md-6 mt-3">
-              <%= form.input :primaryColor %>
+              <%= form.input :primaryColor, as: :color %>
             </div>
             <div class="col-12 col-md-6 mt-3">
-              <%= form.input :secondaryColor %>
+              <%= form.input :secondaryColor , as: :color %>
             </div>
           </div>
       </div>
