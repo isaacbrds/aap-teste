@@ -1,0 +1,93 @@
+<!-- app/views/admin/events/steps/_activity_template.html.erb -->
+<div class="activity-form bg-gray-50 p-4 rounded-lg mb-4" data-activities-target="activity">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-medium text-gray-800">Atividade __INDEX__</h3>
+    <button type="button" 
+            data-action="click->activities#removeActivity"
+            class="text-red-600 hover:text-red-800">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Nome da Atividade -->
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-gray-700">Nome da Atividade</label>
+      <input type="text" 
+             name="activities[__INDEX__][name]" 
+             value=""
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+             placeholder="Ex: Palestra sobre IA">
+    </div>
+
+    <!-- Título/Tema -->
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-gray-700">Título/Tema</label>
+      <input type="text" 
+             name="activities[__INDEX__][title]" 
+             value=""
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+             placeholder="Título específico da apresentação">
+    </div>
+
+    <!-- Palestrante -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Palestrante</label>
+      <input type="text" 
+             name="activities[__INDEX__][speaker]" 
+             value=""
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+             placeholder="Nome do palestrante">
+    </div>
+
+    <!-- Local -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Local</label>
+      <input type="text" 
+             name="activities[__INDEX__][local]" 
+             value=""
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+             placeholder="Sala/Auditório">
+    </div>
+
+    <!-- Horário Início -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Início</label>
+      <input type="datetime-local" 
+             name="activities[__INDEX__][period_start]" 
+             value=""
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+    </div>
+
+    <!-- Horário Fim -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Término</label>
+      <input type="datetime-local" 
+             name="activities[__INDEX__][period_end]" 
+             value=""
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+    </div>
+
+    <!-- Horas Certificado -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Horas para Certificado</label>
+      <input type="number" 
+             name="activities[__INDEX__][certificate_hours]" 
+             value=""
+             min="0" step="0.5"
+             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+    </div>
+
+    <!-- Inscrições Abertas -->
+    <div class="flex items-center">
+      <input type="hidden" name="activities[__INDEX__][subscriptions_open]" value="false">
+      <input type="checkbox" 
+             name="activities[__INDEX__][subscriptions_open]" 
+             value="true"
+             class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+      <label class="ml-2 text-sm text-gray-700">Inscrições abertas</label>
+    </div>
+  </div>
+</div>
