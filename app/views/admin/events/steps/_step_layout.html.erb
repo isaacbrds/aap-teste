@@ -1,29 +1,43 @@
 <!-- app/views/events/steps/_step_layout.html.erb -->
 <div class="container mx-auto px-4 py-8">
-  <div class="max-w-4xl mx-auto">
-    <!-- Progress Bar -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
-        <% [1, 2, 3].each do |step_number| %>
-          <div class="flex items-center <%= step_number == @step ? 'text-blue-600' : step_number < @step ? 'text-green-600' : 'text-gray-400' %>">
-            <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center 
-                        <%= step_number == @step ? 'border-blue-600 bg-blue-50' : 
-                            step_number < @step ? 'border-green-600 bg-green-50' : 'border-gray-300' %>">
-              <%= step_number < @step ? '✓' : step_number %>
-            </div>
-            <span class="ml-2 text-sm font-medium">
-              <%= step_number == 1 ? 'Informações' : step_number == 2 ? 'Agenda' : 'Publicar' %>
-            </span>
-          </div>
-          <% unless step_number == 3 %>
-            <div class="flex-1 h-0.5 mx-4 <%= step_number < @step ? 'bg-green-600' : 'bg-gray-300' %>"></div>
-          <% end %>
-        <% end %>
-      </div>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="text-center font-weight-light my-4"><i class="bi bi-calendar2-event me-2"></i><% if @event.new_record? %> Novo Evento <% else %> Editar Evento <% end %></h3>
     </div>
+    <!-- Progress Bar -->
+      <!-- Progress Bar Bootstrap -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between position-relative">
+            <% [1, 2, 3].each_with_index do |step_number, index| %>
+              <div class="d-flex flex-column align-items-center flex-fill">
+                <!-- Step Circle -->
+                <div class="step-circle <%= step_classes(step_number) %> mb-2">
+                  <%= step_number < @step ? content_tag(:i, '', class: 'fas fa-check') : step_number %>
+                </div>
+                
+                <!-- Step Label -->
+                <small class="text-muted <%= 'fw-bold' if step_number == @step %>">
+                  <%= step_labels[step_number] %>
+                </small>
+              </div>
+              
+              <!-- Progress Line -->
+              <% unless index == 2 %>
+                <div class="flex-fill mx-3">
+                  <div class="progress" style="height: 2px;">
+                    <div class="progress-bar <%= step_number < @step ? 'bg-success' : 'bg-light' %>" 
+                         style="width: 100%;"></div>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
 
     <!-- Form Content -->
-    <div class="bg-white shadow-lg rounded-lg p-6">
+    <div class="card-body">
       <%= yield %>
     </div>
   </div>

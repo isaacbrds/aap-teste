@@ -1,114 +1,106 @@
-criado
 <%= render 'admin/events/steps/step_layout' do %>
-<h2 class="text-2xl font-bold mb-6 text-gray-800">Informações Gerais do Evento</h2>
-
-  <%= simple_form_for [:admin, @event], url: create_step_admin_events_path, method: :post, local: true, 
-                html: { class: "space-y-6" }, data: { step: 1 } do |form| %>
+  <h2 class="text-center font-weight-light my-4"> <i class="bi bi-info-circle me-2 "></i>  Informações Gerais do Evento</h2>
+  <%= simple_form_for [:admin, @event], url: create_step_admin_events_path, method: :post, local: true,
+  html: { class: "space-y-6" }, data: { step: 1 } do |form| %>
     <%= hidden_field_tag :step, 1 %>
 
-    <div>
-      <%= form.label :name, "Nome do Evento", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :name,
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-          placeholder: "Ex: Workshop de Desenvolvimento Web" %>
-      <% if @event.errors[:name].any? %>
-        <p class="mt-1 text-sm text-red-600"><%= @event.errors[:name].first %></p>
-      <% end %>
-    </div>
-
-    <!-- Período do Evento -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <%= form.label :period_start, "Data de Início", class: "block text-sm font-medium text-gray-700" %>
-        <%= form.date_field :period_start,
-            class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-        <% if @event.errors[:period_start].any? %>
-          <p class="mt-1 text-sm text-red-600"><%= @event.errors[:period_start].first %></p>
+    <div class="row">
+      <div class="col-12 col-md-12 mb-4">
+        <%= form.label :name, "Nome do Evento"  %>
+        <%= form.text_field :name,
+            class: "form-control",
+            placeholder: "Ex: Workshop de Desenvolvimento Web" %>
+        <% if @event.errors[:name].any? %>
+          <p class="text-danger"><%= @event.errors[:name].first %></p>
         <% end %>
       </div>
 
-      <div>
-        <%= form.label :period_end, "Data de Término", class: "block text-sm font-medium text-gray-700" %>
-        <%= form.date_field :period_end,
-            class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-        <% if @event.errors[:period_end].any? %>
-          <p class="mt-1 text-sm text-red-600"><%= @event.errors[:period_end].first %></p>
-        <% end %>
-      </div>
-    </div>
+      <!-- Período do Evento -->
+        <div class="col-12 col-md-6 mb-4">
+          <%= form.label :period_start, "Data de Início"  %>
+          <%= form.date_field :period_start,
+              class: "form-control" %>
+          <% if @event.errors[:period_start].any? %>
+            <p class="text-danger"><%= @event.errors[:period_start].first %></p>
+          <% end %>
+        </div>
 
-    <!-- Local -->
-    <div>
-      <%= form.label :local, "Local do Evento", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :local,
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
+        <div class="col-12 col-md-6 mb-4">
+          <%= form.label :period_end, "Data de Término" %>
+          <%= form.date_field :period_end,
+              class: "form-control" %>
+          <% if @event.errors[:period_end].any? %>
+            <p class="text-danger"><%= @event.errors[:period_end].first %></p>
+          <% end %>
+        </div>
+        <div class="col-12 col-md-12 mt-4 mb-4">
+          <%= form.input :banner %>
+        </div>
+        <!-- Local -->
+        <div class="col-12 col-md-12 mb-4">
+          <%= form.label :local, "Local do Evento" %>
+          <%= form.text_field :local,
+          class: "form-control",
           placeholder: "Ex: Auditório Principal, Campus I" %>
-    </div>
+        </div>
 
-    <!-- Organizador -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <%= form.label :responsable, "Responsável", class: "block text-sm font-medium text-gray-700" %>
-        <%= form.text_field :responsable,
-            class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
+        <div class="col-12 col-md-12 mb-3" >
+          <%= form.label :txtEnter %>
+          <%= form.rich_text_area :txtEnter %>
+        </div>
+            
+        <div class="col-12 col-md-12 mb-3">
+          <%= form.label :txtAbout %>
+          <%= form.rich_text_area :txtAbout %>
+        </div>
+
+        <!-- Organizador -->
+        <div class="col-12 col-md-6 mb-4">
+          <%= form.label :responsable, "Responsável" %>
+          <%= form.text_field :responsable,
+          class: "form-control",
             placeholder: "Nome do responsável" %>
       </div>
 
-      <div>
-        <%= form.label :email, "Email de Contato", class: "block text-sm font-medium text-gray-700" %>
+      <div class="col-12 col-md-6 mb-4">
+        <%= form.label :email, "Email de Contato" %>
         <%= form.email_field :email,
-            class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-            placeholder: "contato@campus.edu.br" %>
+        class: "form-control",
+        placeholder: "contato@campus.edu.br" %>
       </div>
-    </div>
-
-    <!-- Comissão -->
-    <div>
-      <%= form.label :comission, "Comissão Organizadora", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :comission,
-          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500",
-          placeholder: "Ex: Comissão de Extensão - Departamento de Computação" %>
-    </div>
-
-    <!-- Cores do Evento -->
-    <div>
-      <h3 class="text-lg font-medium text-gray-800 mb-3">Personalização Visual</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <%= form.label :primaryColor, "Cor Primária", class: "block text-sm font-medium text-gray-700" %>
-          <div class="mt-1 flex items-center space-x-2">
-            <%= form.color_field :primaryColor, value: @event.primaryColor || "#3B82F6",
-                class: "h-10 w-20 rounded border border-gray-300" %>
-            <%= form.text_field :primaryColor, value: @event.primaryColor || "#3B82F6",
-                class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-          </div>
-        </div>
-
-        <div>
-          <%= form.label :secondaryColor, "Cor Secundária", class: "block text-sm font-medium text-gray-700" %>
-          <div class="mt-1 flex items-center space-x-2">
-            <%= form.color_field :secondaryColor, value: @event.secondaryColor || "#10B981",
-                class: "h-10 w-20 rounded border border-gray-300" %>
-            <%= form.text_field :secondaryColor, value: @event.secondaryColor || "#10B981",
-                class: "flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" %>
-          </div>
-        </div>
+      <!-- Comissão -->
+      <div class="col-12 col-md-6 mb-4">
+        <%= form.label :comission, "Comissão Organizadora" %>
+        <%= form.text_field :comission,
+        class: "form-control",
+        placeholder: "Ex: Comissão de Extensão - Departamento de Computação" %>
       </div>
-    </div>
 
-    <!-- Botões -->
-    <div class="flex justify-between pt-6">
-      <%= link_to "Cancelar", root_path, 
-          class: "px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" %>
-      
-      <div class="space-x-3">
+      <!-- Cores do Evento -->
+      <h3 class="text-center font-weight-light my-4"><i class="bi bi-gear me-2 "></i>  Personalização Visual</h3>
+      <div class="col-12 col-md-6 mb-4">
+        <%= form.label :primaryColor, "Cor Primária" %>
+        <%= form.color_field :primaryColor, value: @event.primaryColor || "#3B82F6",
+        class: "form-control" %>
+      </div>
+
+      <div class="col-12 col-md-6 mb-4">
+        <%= form.label :secondaryColor, "Cor Secundária" %>
+        <%= form.color_field :secondaryColor, value: @event.secondaryColor || "#10B981",
+        class: "form-control" %>
+      </div>
+
+      <!-- Botões -->
+      <div class="d-flex justify-content-around items-center mt-6">
+        <%= link_to "Cancelar", root_path, 
+        class: "btn btn-danger" %>
         <%= link_to "Limpar Formulário", destroy_session_admin_events_path, method: :delete,
-            confirm: "Tem certeza que deseja limpar todos os dados?",
-            class: "px-4 py-2 text-red-600 hover:text-red-800" %>
-        
-        <%= form.submit "Próximo: Agenda", 
-            class: "px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+          confirm: "Tem certeza que deseja limpar todos os dados?",
+          class: "btn btn-outline-danger" %>
+
+          <%= form.submit "Próximo: Agenda", 
+          class: "btn btn-success" %>
       </div>
     </div>
-  <% end %>    
+  <% end %>
 <% end %>
