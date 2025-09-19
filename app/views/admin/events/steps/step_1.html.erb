@@ -42,6 +42,9 @@
           <%= form.text_field :local,
           class: "form-control",
           placeholder: "Ex: Auditório Principal, Campus I" %>
+          <% if @event.errors[:local].any? %>
+            <p class="text-danger"><%= @event.errors[:local].first %></p>
+          <% end %>
         </div>
 
         <div class="col-12 col-md-12 mb-3" >
@@ -72,8 +75,16 @@
       <div class="col-12 col-md-6 mb-4">
         <%= form.label :comission, "Comissão Organizadora" %>
         <%= form.text_field :comission,
-        class: "form-control",
+        class: "form-control mt-2",
         placeholder: "Ex: Comissão de Extensão - Departamento de Computação" %>
+      </div>
+
+      <div class="col-12 col-md-6 mb-4">
+        <%= form.input :status, collection: { 'Inscrições Abertas': 'registrations_open',
+                                                    'Evento em andamento': 'event_in_progress',
+                                                    'Evento encerrado': 'event_closed',
+                                                    'Cancelado': 'cancelled' },
+                                                    include_blank: false %>
       </div>
 
       <!-- Cores do Evento -->

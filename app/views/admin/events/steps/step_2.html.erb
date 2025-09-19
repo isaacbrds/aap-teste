@@ -8,13 +8,18 @@
             <div class="card-body">
               <div class="row">
                   <h3 class="text-center">Informações Básicas</h3>
+                  <% if @event.banner.attached? %>
+                    <div class="text-center mb-3">
+                      <%= image_tag @event.banner.variant(resize_to_limit: [300, 200]), class: "img-fluid rounded" %>
+                    </div>
+                  <% end %>
                   <div class="d-flex justify-content-around align-items-center mb-3">
-                    <p><i class="bi bi-geo-alt"></i>  <%= @event.local %></p>
-                    <p><i class="bi bi-calendar"></i><%= @event.period_start.strftime('%d/%m/%Y') %></p>
+                    <p><i class="bi bi-geo-alt me-1"></i>  <%= @event.local %></p>
+                    <p><i class="bi bi-calendar me-1"></i><%= @event.period_start.strftime('%d/%m/%Y') %></p>
                   </div>
                   <div class="d-flex justify-content-around align-items-center mb-3">
-                    <p><i class="bi bi-watch"></i> <%= @event.period_start.strftime('%H:%M') %></p>
-                    <p><i class="bi bi-people"></i> 250 </p>
+                    <p><i class="bi bi-clock me-1"></i> <%= @event.period_start.strftime('%H:%M') %></p>
+                    <p><i class="bi bi-people me-1"></i> 250 </p>
                   </div>
               </div>
             </div>
@@ -36,12 +41,19 @@
                     </template>
                 <% end %>
               <% else %>
-                <%= render 'admin/events/steps/activity_form', activity: Activity.new, index: 0 %>
-              <% end %>
-              </div>
-            <!-- Botão Adicionar Atividade -->
-              <div class="text-center">
-                <button type="button" 
+                <div class="text-center">
+                  <h3 class="mt-2 text-center">Nenhuma atividade adicionada</h3>
+                  <p class="mt-1 text-sm text-gray-500">O evento será criado sem programação específica</p>
+                  <div class="text-center">
+                  <button type="button" 
+                        class="btn btn-outline-primary"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#activityModal"
+                        data-action="click->activities#openModal">
+                  <i class="fas fa-plus me-2"></i>
+                  Adicionar Primeira Atividade
+                </button>
+                    <button type="button"
                         data-action="click->activities#addActivity"
                         class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,21 +62,28 @@
                   Adicionar Atividade
                 </button>
               </div>
-              <div class="card-footer d-flex justify-content-around">
+                </div>
+              <% end %>
+              </div>
+            <!-- Botão Adicionar Atividade -->
+              
+              
+            </div>
+            <div class="card-footer d-flex justify-content-around">
                 <%= link_to "Voltar", new_admin_event_path(step: 1), 
                 class: "btn btn-danger" %>
                 
                 <%= form.submit "Próximo: Publicar", 
                 class: "btn btn-primary" %>
               </div>
-              <% end %>
-            </div>
+
+              <!-- MODAL DEVE ESTAR AQUI DENTRO -->
+    
+    <% end %>
         </div>
      </div>
      <!-- Fechando os cards -->
 
-    
-
-   
+     <%= render 'admin/events/steps/activity_modal' %>
   </div>
 <% end %>

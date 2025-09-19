@@ -7,3 +7,5 @@ import * as bootstrap from "bootstrap"
 //Turbo.session.drive = false
 import "trix"
 import "@rails/actiontext"
+
+window.bootstrap = bootstrap;

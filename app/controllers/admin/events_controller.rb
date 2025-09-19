@@ -23,26 +23,49 @@ module Admin
     end
 
     def new
-      @event = build_event_from_session
-      @activities = session[:activities] || []
+      @wizard = EventWizardService.new(
+        session: session, 
+        params: params, 
+        current_user: current_user
+      )
+      
+      @event = @wizard.build_event_from_session
+      @activities = @wizard.build_activities_from_session
       authorize @event
 
       render "admin/events/steps/step_#{@step}"
     end
 
     def create_step
-      case @step
-      when 1 then handle_general_info
-      when 2 then handle_agenda
-      when 3 then handle_publish
+      @wizard = EventWizardService.new(
+      session: session, 
+      params: params, 
+      current_user: current_user
+    )
+    
+      result = @wizard.process_step(@step)
+      
+      if result[:success]
+        if result[:next_step]
+          redirect_to new_admin_event_path(step: result[:next_step]), 
+                      notice: result[:message]
+        else
+          redirect_to admin_event_path(result[:event]), 
+                      notice: result[:message]
+        end
       else
-        redirect_to new_admin_events_path
+        @event = result[:model] || @wizard.build_event_from_session
+        @activities = result[:models] || @wizard.build_activities_from_session
+        
+        flash.now[:alert] = 'Por favor, corrija os erros abaixo.'
+        render "admin/events/steps/step_#{@step}", status: :unprocessable_entity
       end
     end
 
     def destroy_session
-      clear_event_session
-      redirect_to new_event_path, notice: 'Formulário reiniciado'
+      EventWizardService.new(session: session, params: {}, current_user: current_user)
+                     .clear_session
+    redirect_to new_admin_event_path, notice: 'Formulário reiniciado'
     end
 
     def create
@@ -101,82 +124,13 @@ module Admin
 
     def set_step
       @step = params[:step]&.to_i&.between?(1, 3) ? params[:step].to_i : 1
-      @step_name = STEPS[@step]
     end
-    def handle_general_info
-      @event = Event.new(general_info_params)
-      @event.user = current_user
-
-      if @event.valid?(:general_info)
-        session[:event_general] = general_info_params.to_h
-        redirect_to new_admin_event_path(step: 2), notice: 'Informações gerais salvas!'
-      else
-        flash[:alert] = "Erro ao criar o evento"
-        render "admin/events/steps/step_1", status: :unprocessable_entity
-      end
-    end
-
-
-    def handle_agenda
-      activities_data = params[:activities] || []
     
-      # Validar atividades básicas
-      activities_hash = Hash.new activities_data.to_enum
-      @activities = activities_hash.map { |activity| Activity.new(activity) }
-    
-      if valid_activities?(@activities)
-        session[:event_activities] = activities_data
-        redirect_to new_admin_event_path(step: 3), notice: 'Agenda configurada!'
-      else
-        render "admin/events/steps/step_2", status: :unprocessable_entity
-      end
-    end
-
-    def handle_publish
-      @event = build_event_from_session
-      @activities = (session[:event_activities] || []).map { |activity_data|
-        Activity.new(activity_data)
-      }
-
-      # Validações finais
-      if @event.valid? && @activities.all?(&:valid?)
-        ActiveRecord::Base.transaction do
-          @event.save!
-          @activities.each { |activity| activity.update!(event: @event) }
-          clear_event_session
-        end
-
-        redirect_to @event, notice: 'Evento criado com sucesso!'
-      else
-        render "admin/events/steps/step_3", status: :unprocessable_entity
-      end
-    end
-
-    def build_event_from_session
-      general_params = session[:event_general] || {}
-      event = current_user.owned_events.build(general_params)
-      event
-    end
-
-    def valid_activities?(activities)
-      return true if activities.empty? # Permite eventos sem atividades
-      
-      activities.all? do |activity|
-        activity.valid?(:basic_info) &&
-        activity.period_start.present? &&
-        activity.period_end.present?
-      end
-    end
-
-    def clear_event_session
-      session.delete(:event_general)
-      session.delete(:event_activities)
-    end
 
     def general_info_params
       params.require(:event).permit(
-        :name, :local, :period_start, :period_end, :email,
-        :responsable, :comission, :primaryColor, :secondaryColor
+        :name, :local, :period_start, :period_end, :email, :txtAbout, :txtEnter,
+        :responsable, :comission, :primaryColor, :secondaryColor, :status, :banner
       )
     end
 
@@ -185,6 +139,13 @@ module Admin
         activity.permit(:name, :title, :speaker, :local, :period_start,
                          :period_end, :certificate_hours, :subscriptions_open)
       end
+    end
+
+    def permitted_activity_params(activity_params)
+      activity_params.permit(
+        :name, :title, :speaker, :local, :period_start, :period_end,
+        :certificate_hours, :subscriptions_open
+      )
     end
   end
 end
