@@ -28,7 +28,7 @@ export default class extends Controller {
     this.editingIndexValue = -1
     
     if (this.hasModalTitleTarget) {
-      this.modalTitleTarget.innerHTML = '<i class="fas fa-plus me-2"></i>Nova Atividade'
+      this.modalTitleTarget.innerHTML = '<i class="bi bi-plus me-2"></i>Nova Atividade'
     }
     
     if (this.hasSaveButtonTextTarget) {
@@ -43,7 +43,7 @@ export default class extends Controller {
     this.editingIndexValue = index
     
     if (this.hasModalTitleTarget) {
-      this.modalTitleTarget.innerHTML = '<i class="fas fa-edit me-2"></i>Editar Atividade'
+      this.modalTitleTarget.innerHTML = '<i class="bi bi-pencil me-2"></i>Editar Atividade'
     }
     
     if (this.hasSaveButtonTextTarget) {

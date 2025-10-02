@@ -29,8 +29,12 @@ class EventWizardService
 
   def build_event_from_session
     general_params = session[:event_general] || {}
-    event = Event.new(general_params)
+    event = Event.new(general_params.except('banner'))
     event.user = current_user
+    
+    if general_params[:banner].present? && general_params[:banner].is_a?(ActionDispatch::Http::UploadedFile)
+        event.banner.attach(general_params[:banner])
+    end
     event
   end
 
@@ -62,7 +66,8 @@ class EventWizardService
     event = Event.new(general_info_params)
     event.user = current_user
 
-    if event.valid?(:general_info)
+    if event.valid?
+      event.save
       session[:event_general] = general_info_params.to_h
       { success: true, next_step: 2, message: 'Informações gerais salvas!' }
     else
@@ -106,7 +111,7 @@ class EventWizardService
   def process_publish
     event = build_event_from_session
     activities = build_activities_from_session
-    
+
     if event.valid?
       result = create_event_with_activities(event, activities)
       clear_session if result[:success]
@@ -168,15 +173,16 @@ class EventWizardService
     nil
   end
   def general_info_params
-    params.require(:event).permit(
+    params.require(:event).permit(:id,
       :name, :description, :local, :period_start, :period_end, :email,
-      :responsable, :comission, :primaryColor, :secondaryColor
+      :txtAbout,:txtEnter, :responsable, :comission, :primaryColor,
+      :status, :secondaryColor, :banner
     )
   end
 
   def permitted_activities_params
     return [] unless params[:activities].present?
-    
+
     # Permitir parâmetros aninhados
     permitted = params.require(:activities).map do |index, activity_params|
       activity_params.permit(
@@ -184,7 +190,7 @@ class EventWizardService
         :certificate_hours, :subscriptions_open
       ).to_h
     end
-      
+
       permitted
   end
 

@@ -8,11 +8,6 @@
             <div class="card-body">
               <div class="row">
                   <h3 class="text-center">Informações Básicas</h3>
-                  <% if @event.banner.attached? %>
-                    <div class="text-center mb-3">
-                      <%= image_tag @event.banner.variant(resize_to_limit: [300, 200]), class: "img-fluid rounded" %>
-                    </div>
-                  <% end %>
                   <div class="d-flex justify-content-around align-items-center mb-3">
                     <p><i class="bi bi-geo-alt me-1"></i>  <%= @event.local %></p>
                     <p><i class="bi bi-calendar me-1"></i><%= @event.period_start.strftime('%d/%m/%Y') %></p>
@@ -53,27 +48,16 @@
                   <i class="fas fa-plus me-2"></i>
                   Adicionar Primeira Atividade
                 </button>
-                    <button type="button"
-                        data-action="click->activities#addActivity"
-                        class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                  Adicionar Atividade
-                </button>
               </div>
                 </div>
               <% end %>
               </div>
             <!-- Botão Adicionar Atividade -->
-              
-              
             </div>
             <div class="card-footer d-flex justify-content-around">
-                <%= link_to "Voltar", new_admin_event_path(step: 1), 
+                <%= link_to "Voltar", new_admin_event_path(step: 1),
                 class: "btn btn-danger" %>
-                
-                <%= form.submit "Próximo: Publicar", 
+                <%= form.submit "Próximo: Publicar",
                 class: "btn btn-primary" %>
               </div>
 

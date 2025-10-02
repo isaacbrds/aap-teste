@@ -1,39 +1,42 @@
-<div class="container">
-  <div class="d-flex justify-content-between">
-    <h2 class="mb-2 mt-3">Eventos</h2>
-    <span class="mb-2 mt-3">
-      <%= link_to new_admin_event_path, class: "btn btn-primary" do %>
-          Criar Evento<i class="bi bi-plus-square ms-2"></i>
-      <% end %>
-    </span>
-  </div>
-  <% @events.each do |event| %>
-  <div class="card mt-3">
-    <h5 class="card-header"></h5>
-    <div class="card-body">
-      <h5 class="card-title d-flex justify-content-between mb-3"><%= event.name %> <span class="badge text-bg-secondary"> <%= I18n.t("activerecord.attributes.event.statuses.#{event.status}") %></span></h5>
-      <p class="card-text"><%= event.txtEnter %></p>
-      <p class="card-text"><span><i class="bi bi-clock me-2"></i><%= l(event.period_start, format: :long) %> </span></p>
-      <p class="card-text"><span><i class="bi bi-geo-alt me-2"></i><%= event.local %> </span></p>
-      <p class="card-text"><%= link_to admin_event_registrations_path(event), class: 'nav-link' do %>
-        <i class="bi bi-people me-2"></i>Participantes
+<div data-controller="events">
+  <div class="container">
+    <div class="d-flex justify-content-between">
+      <h2 class="mb-2 mt-3">Eventos</h2>
+      <span class="mb-2 mt-3">
+        <%= link_to new_admin_event_path, class: "btn btn-primary" do %>
+            Criar Evento<i class="bi bi-plus-square ms-2"></i>
         <% end %>
-      </p>
+        <a href="#" data-action="click->events#formEvents">Novo Evento</a>
+      </span>
     </div>
-    <div class="card-footer d-flex justify-content-between">
-      <small class="text-muted">Email do Responsável: <%= event.email %></small>
-      <div class="d-flex justify-content-around">
-                    <%= link_to admin_event_path(event), class: 'btn btn-info btn-sm me-2' do %>
-                    <i class="bi bi-eye"></i>
-                    <% end %>
-                    <%= link_to edit_admin_event_path(event), class: 'btn btn-warning btn-sm me-2' do %>
-                      <i class="bi bi-pencil-square"></i>
-                    <% end %>
+    <% @events.each do |event| %>
+    <div class="card mt-3">
+      <h5 class="card-header"></h5>
+      <div class="card-body">
+        <h5 class="card-title d-flex justify-content-between mb-3"><%= event.name %> <span class="badge text-bg-secondary"> <%= I18n.t("activerecord.attributes.event.statuses.#{event.status}") %></span></h5>
+        <p class="card-text"><%= event.txtEnter %></p>
+        <p class="card-text"><span><i class="bi bi-clock me-2"></i><%= l(event.period_start, format: :long) %> </span></p>
+        <p class="card-text"><span><i class="bi bi-geo-alt me-2"></i><%= event.local %> </span></p>
+        <p class="card-text"><%= link_to admin_event_registrations_path(event), class: 'nav-link' do %>
+          <i class="bi bi-people me-2"></i>Participantes
+          <% end %>
+        </p>
+      </div>
+      <div class="card-footer d-flex justify-content-between">
+        <small class="text-muted">Email do Responsável: <%= event.email %></small>
+        <div class="d-flex justify-content-around">
+                      <%= link_to admin_event_path(event), class: 'btn btn-info btn-sm me-2' do %>
+                      <i class="bi bi-eye"></i>
+                      <% end %>
+                      <%= link_to edit_admin_event_path(event), class: 'btn btn-warning btn-sm me-2' do %>
+                        <i class="bi bi-pencil-square"></i>
+                      <% end %>
+        </div>
       </div>
     </div>
-  </div>
-  <% end %>
-  <div class="d-flex justify-content-center mt-3">
-    <%== pagy_bootstrap_nav(@pagy) %>
+    <% end %>
+    <div class="d-flex justify-content-center mt-3">
+      <%== pagy_bootstrap_nav(@pagy) %>
+    </div>
   </div>
 </div>

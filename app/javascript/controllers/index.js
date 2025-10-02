@@ -13,5 +13,8 @@ application.register("add-activities-to-event", AddActivitiesToEventController)
 import BsModalController from "./bs_modal_controller"
 application.register("bs-modal", BsModalController)
 
+import EventsController from "./events_controller"
+application.register("events", EventsController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)
