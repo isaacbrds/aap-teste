@@ -1,0 +1,152 @@
+<div class="modal fade" id="activityModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span data-activities-target="modalTitle">Nova Atividade</span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          
+          <div class="modal-body">
+            <!-- IMPORTANTE: O form deve ter o target -->
+            <form data-activities-target="modalForm" novalidate>
+              <div class="row g-3">
+                <div class="col-12">
+                  <label>Nome da Atividade *</label>
+                  <input type="text" 
+                         class="form-control" 
+                         data-activities-target="nameInput"
+                         required>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <!-- outros campos... -->
+                  <div class="col-12">
+              <label for="activityTitle" class="form-label fw-semibold">
+                <i class="bi bi-heading me-1 text-primary"></i>
+                Título/Tema Específico *
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="activityTitle"
+                     data-activities-target="titleInput"
+                     placeholder="Título detalhado da apresentação" required>
+              <div class="invalid-feedback"></div>
+              <div class="form-text">Título mais específico que aparecerá no certificado</div>
+            </div>
+
+            <!-- Palestrante e Local -->
+            <div class="col-md-6">
+              <label for="activitySpeaker" class="form-label fw-semibold">
+                <i class="bi bi-person me-1 text-primary"></i>
+                Palestrante
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="activitySpeaker"
+                     data-activities-target="speakerInput"
+                     placeholder="Nome do palestrante">
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="activityLocal" class="form-label fw-semibold">
+                <i class="bi bi-geo-alt me-1 text-primary"></i>
+                Local da Atividade
+              </label>
+              <input type="text" 
+                     class="form-control" 
+                     id="activityLocal"
+                     data-activities-target="localInput"
+                     placeholder="Sala, Auditório, etc.">
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <!-- Horários -->
+            <div class="col-md-6">
+              <label for="activityStart" class="form-label fw-semibold">
+                <i class="bi bi-clock me-1 text-primary"></i>
+                Data e Hora de Início *
+              </label>
+              <input type="datetime-local" 
+                     class="form-control" 
+                     id="activityStart"
+                     data-activities-target="startInput"
+                     data-action="change->activities#validateDateTime blur->activities#validateDateTime"
+                     required>
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="activityEnd" class="form-label fw-semibold">
+                <i class="bi bi-clock me-1 text-primary"></i>
+                Data e Hora de Término *
+              </label>
+              <input type="datetime-local" 
+                     class="form-control" 
+                     id="activityEnd"
+                     data-activities-target="endInput"
+                     data-action="change->activities#validateDateTime blur->activities#validateDateTime"
+                     required>
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <!-- Configurações Avançadas -->
+            <div class="col-12">
+              <hr>
+              <h6 class="text-secondary">
+                <i class="fas fa-cogs me-2"></i>
+                Configurações Adicionais
+              </h6>
+            </div>
+
+            <div class="col-md-6">
+              <label for="activityHours" class="form-label fw-semibold">
+                <i class="fas fa-certificate me-1 text-primary"></i>
+                Horas para Certificado
+              </label>
+              <div class="input-group">
+                <input type="number" 
+                       class="form-control" 
+                       id="activityHours"
+                       data-activities-target="hoursInput"
+                       min="0" 
+                       step="0.5"
+                       placeholder="0">
+                <span class="input-group-text">horas</span>
+              </div>
+              <div class="invalid-feedback"></div>
+              <div class="form-text">Deixe vazio ou 0 se não emitir certificado para esta atividade</div>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check">
+                <input type="checkbox" 
+                       class="form-check-input" 
+                       id="activitySubscriptions"
+                       data-activities-target="subscriptionsInput">
+                <label class="form-check-label" for="activitySubscriptions">
+                  <i class="fas fa-user-plus me-1 text-success"></i>
+                  <strong>Permitir inscrições específicas</strong>
+                </label>
+                <div class="form-text">Participantes podem se inscrever especificamente nesta atividade</div>
+              </div>
+            </div>
+          </div>
+        </form>
+        </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button type="button" 
+                    class="btn btn-primary" 
+                    data-action="click->activities#saveActivity"
+                    data-activities-target="saveButton">
+              <span data-activities-target="saveButtonText">Adicionar Atividade</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,73 @@
+<!-- app/views/events/steps/step_2.html.erb -->
+<%= render 'admin/events/steps/step_layout' do %>
+  <div data-controller="activities" data-activities-count-value="<%= @activities.length %>"
+     data-activities-min-activities-value="0">
+     <div class="row">
+        <div class="card col-12 col-md-4 ms-2 me-4">
+          <h2 class="text-center font-weight-light  mt-2 ">Detalhes do Evento</h2>
+            <div class="card-body">
+              <div class="row">
+                  <h3 class="text-center">Informações Básicas</h3>
+                  <div class="d-flex justify-content-around align-items-center mb-3">
+                    <p><i class="bi bi-geo-alt me-1"></i>  <%= @event.local %></p>
+                    <p><i class="bi bi-calendar me-1"></i><%= @event.period_start.strftime('%d/%m/%Y') %></p>
+                  </div>
+                  <div class="d-flex justify-content-around align-items-center mb-3">
+                    <p><i class="bi bi-clock me-1"></i> <%= @event.period_start.strftime('%H:%M') %></p>
+                    <p><i class="bi bi-people me-1"></i> 250 </p>
+                  </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="card col-md-7 ms-3 mb-4">
+         <h2 class="text-center font-weight-light mt-2 ">Construtor de Agenda</h2>
+          <div class="card-body">
+            <%= simple_form_for [:admin, @event], url: create_step_admin_events_path, method: :post, local: true, 
+                      html: { class: "mt-3" } do |form| %>
+            <%= hidden_field_tag :step, 2 %>
+
+              <div id="activities-container" data-activities-target="container">
+              <% if @activities.present? %>
+                <% @activities.each_with_index do |activity, index| %>
+                   <!-- Template para nova atividade -->
+                    <template data-activities-target="template">
+                      <%= render 'admin/events/steps/activity_template' %>
+                    </template>
+                <% end %>
+              <% else %>
+                <div class="text-center">
+                  <h3 class="mt-2 text-center">Nenhuma atividade adicionada</h3>
+                  <p class="mt-1 text-sm text-gray-500">O evento será criado sem programação específica</p>
+                  <div class="text-center">
+                  <button type="button" 
+                        class="btn btn-outline-primary"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#activityModal"
+                        data-action="click->activities#openModal">
+                  <i class="fas fa-plus me-2"></i>
+                  Adicionar Primeira Atividade
+                </button>
+              </div>
+                </div>
+              <% end %>
+              </div>
+            <!-- Botão Adicionar Atividade -->
+            </div>
+            <div class="card-footer d-flex justify-content-around">
+                <%= link_to "Voltar", new_admin_event_path(step: 1),
+                class: "btn btn-danger" %>
+                <%= form.submit "Próximo: Publicar",
+                class: "btn btn-primary" %>
+              </div>
+
+              <!-- MODAL DEVE ESTAR AQUI DENTRO -->
+    
+    <% end %>
+        </div>
+     </div>
+     <!-- Fechando os cards -->
+
+     <%= render 'admin/events/steps/activity_modal' %>
+  </div>
+<% end %>

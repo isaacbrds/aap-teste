@@ -1,0 +1,47 @@
+<!-- app/views/events/steps/step_2.html.erb -->
+<%= render 'step_layout' do %>
+  <div data-controller="activities">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Programação do Evento</h2>
+
+    <%= form_with url: create_step_events_path, method: :post, local: true, 
+                  html: { class: "space-y-6" } do |form| %>
+      <%= hidden_field_tag :step, 2 %>
+
+      <div id="activities-container" data-activities-target="container">
+        <% if @activities.present? %>
+          <% @activities.each_with_index do |activity, index| %>
+            <%= render 'activity_form', activity: activity, index: index %>
+          <% end %>
+        <% else %>
+          <%= render 'activity_form', activity: Activity.new, index: 0 %>
+        <% end %>
+      </div>
+
+      <!-- Botão Adicionar Atividade -->
+      <div class="text-center">
+        <button type="button" 
+                data-action="click->activities#addActivity"
+                class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Adicionar Atividade
+        </button>
+      </div>
+
+      <!-- Botões -->
+      <div class="flex justify-between pt-6 border-t">
+        <%= link_to "Voltar", new_event_path(step: 1), 
+            class: "px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" %>
+        
+        <%= form.submit "Próximo: Publicar", 
+            class: "px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      </div>
+    <% end %>
+
+    <!-- Template para nova atividade -->
+    <template data-activities-target="template">
+      <%= render 'activity_form', activity: Activity.new, index: '__INDEX__' %>
+    </template>
+  </div>
+<% end %>

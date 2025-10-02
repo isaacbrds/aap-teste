@@ -18,6 +18,10 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :users
     resources :events do
+      collection do
+        post :create_step
+        delete :destroy_session
+      end
       resources :registrations
 
       resources :certificates, only: %i[ index show ] do

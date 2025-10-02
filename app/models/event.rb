@@ -12,7 +12,7 @@ class Event < ApplicationRecord
   cancelled: "cancelled" }
 
   validates :name, :local, :period_start, :period_end, presence: true
-  validates :banner, attached: true, content_type: [ :png, :jpg, :jpeg ]
+  #validates :banner, attached: true, content_type: [ :png, :jpg, :jpeg ]
   validate :period_start_cannot_be_in_past, :period_end_must_be_after_period_start
 
   private

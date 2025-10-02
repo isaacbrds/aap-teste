@@ -4,5 +4,17 @@
 
 import { application } from "./application"
 
+import ActivitiesController from "./activities_controller"
+application.register("activities", ActivitiesController)
+
+import AddActivitiesToEventController from "./add_activities_to_event_controller"
+application.register("add-activities-to-event", AddActivitiesToEventController)
+
+import BsModalController from "./bs_modal_controller"
+application.register("bs-modal", BsModalController)
+
+import EventsController from "./events_controller"
+application.register("events", EventsController)
+
 import HelloController from "./hello_controller"
 application.register("hello", HelloController)

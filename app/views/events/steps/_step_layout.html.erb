@@ -1,0 +1,30 @@
+<!-- app/views/events/steps/_step_layout.html.erb -->
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Progress Bar -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <% [1, 2, 3].each do |step_number| %>
+          <div class="flex items-center <%= step_number == @step ? 'text-blue-600' : step_number < @step ? 'text-green-600' : 'text-gray-400' %>">
+            <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center 
+                        <%= step_number == @step ? 'border-blue-600 bg-blue-50' : 
+                            step_number < @step ? 'border-green-600 bg-green-50' : 'border-gray-300' %>">
+              <%= step_number < @step ? '✓' : step_number %>
+            </div>
+            <span class="ml-2 text-sm font-medium">
+              <%= step_number == 1 ? 'Informações' : step_number == 2 ? 'Agenda' : 'Publicar' %>
+            </span>
+          </div>
+          <% unless step_number == 3 %>
+            <div class="flex-1 h-0.5 mx-4 <%= step_number < @step ? 'bg-green-600' : 'bg-gray-300' %>"></div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="bg-white shadow-lg rounded-lg p-6">
+      <%= yield %>
+    </div>
+  </div>
+</div>

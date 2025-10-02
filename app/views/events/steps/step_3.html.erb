@@ -1,0 +1,218 @@
+<!-- app/views/events/steps/step_3.html.erb -->
+<%= render 'step_layout' do %>
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">Revisar e Publicar Evento</h2>
+
+  <!-- Preview do Evento -->
+  <div class="space-y-8">
+    <!-- Informações Gerais -->
+    <div class="bg-white border rounded-lg p-6">
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">Informações Gerais</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Nome do Evento</dt>
+          <dd class="mt-1 text-lg font-semibold text-gray-900"><%= @event.name %></dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Local</dt>
+          <dd class="mt-1 text-gray-900"><%= @event.local %></dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Período</dt>
+          <dd class="mt-1 text-gray-900">
+            <%= @event.period_start&.strftime('%d/%m/%Y') %>
+            <% if @event.period_end != @event.period_start %>
+              - <%= @event.period_end&.strftime('%d/%m/%Y') %>
+            <% end %>
+          </dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-500">Responsável</dt>
+          <dd class="mt-1 text-gray-900"><%= @event.responsable %></dd>
+        </div>
+
+        <div class="md:col-span-2">
+          <dt class="text-sm font-medium text-gray-500">Email de Contato</dt>
+          <dd class="mt-1 text-gray-900"><%= @event.email %></dd>
+        </div>
+
+        <div class="md:col-span-2">
+          <dt class="text-sm font-medium text-gray-500">Comissão Organizadora</dt>
+          <dd class="mt-1 text-gray-900"><%= @event.comission %></dd>
+        </div>
+
+        <% if @event.description.present? %>
+          <div class="md:col-span-2">
+            <dt class="text-sm font-medium text-gray-500">Descrição</dt>
+            <dd class="mt-1 text-gray-900 whitespace-pre-line"><%= @event.description %></dd>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Preview das Cores -->
+      <div class="mt-6">
+        <dt class="text-sm font-medium text-gray-500 mb-2">Cores do Evento</dt>
+        <div class="flex space-x-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full border-2 border-gray-200"
+                 style="background-color: <%= @event.primaryColor %>"></div>
+            <span class="ml-2 text-sm text-gray-600">Primária</span>
+          </div>
+          <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full border-2 border-gray-200"
+                 style="background-color: <%= @event.secondaryColor %>"></div>
+            <span class="ml-2 text-sm text-gray-600">Secundária</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview da Programação -->
+    <div class="bg-white border rounded-lg p-6">
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">Programação</h3>
+      <% if @activities.present? %>
+        <div class="space-y-4">
+          <% @activities.each_with_index do |activity, index| %>
+            <div class="border-l-4 pl-4 py-3" style="border-color: <%= @event.primaryColor %>">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-900"><%= activity.name %></h4>
+                  <% if activity.title.present? %>
+                    <p class="text-gray-600 mt-1"><%= activity.title %></p>
+                  <% end %>
+                  <div class="mt-2 text-sm text-gray-500 space-y-1">
+                    <% if activity.speaker.present? %>
+                      <p><strong>Palestrante:</strong> <%= activity.speaker %></p>
+                    <% end %>
+                    <% if activity.local.present? %>
+                      <p><strong>Local:</strong> <%= activity.local %></p>
+                    <% end %>
+                    <% if activity.period_start.present? %>
+                      <p><strong>Horário:</strong> 
+                        <%= activity.period_start.strftime('%d/%m/%Y às %H:%M') %>
+                        <% if activity.period_end.present? %>
+                          - <%= activity.period_end.strftime('%H:%M') %>
+                        <% end %>
+                      </p>
+                    <% end %>
+                    <% if activity.certificate_hours.present? && activity.certificate_hours > 0 %>
+                      <p><strong>Carga horária:</strong> <%= activity.certificate_hours %>h</p>
+                    <% end %>
+                  </div>
+                </div>
+                <div class="ml-4 flex flex-col items-end space-y-2">
+                  <% if activity.subscriptions_open %>
+                    <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                      Inscrições Abertas
+                    </span>
+                  <% else %>
+                    <span class="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                      Sem Inscrição
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-8 text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h.2c.5 0 1 .4 1 1v10c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1V8c0-.6.4-1 1-1h.8z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhuma atividade adicionada</h3>
+          <p class="mt-1 text-sm text-gray-500">O evento será criado sem programação específica</p>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Configurações de Publicação -->
+    <%= form_with url: create_step_events_path, method: :post, local: true,
+                  html: { class: "bg-blue-50 border border-blue-200 rounded-lg p-6" } do |form| %>
+      <%= hidden_field_tag :step, 3 %>
+      <h3 class="text-lg font-semibold mb-4 text-blue-900">Configurações de Publicação</h3>
+      <div class="space-y-4">
+        <!-- Status do Evento -->
+        <div>
+          <label class="block text-sm font-medium text-blue-800 mb-2">Status inicial do evento</label>
+          <div class="space-y-2">
+            <label class="inline-flex items-center">
+              <input type="radio" name="event[status]" value="draft" checked
+                     class="form-radio h-4 w-4 text-blue-600">
+              <span class="ml-2 text-sm text-blue-800">
+                <strong>Rascunho</strong> - Evento salvo mas não visível publicamente
+              </span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="event[status]" value="published"
+                     class="form-radio h-4 w-4 text-blue-600">
+              <span class="ml-2 text-sm text-blue-800">
+                <strong>Publicado</strong> - Evento visível e disponível para inscrições
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notificações -->
+        <div>
+          <label class="inline-flex items-center">
+            <input type="checkbox" name="send_notifications" value="true" checked
+                   class="form-checkbox h-4 w-4 text-blue-600">
+            <span class="ml-2 text-sm text-blue-800">
+              Enviar notificações para administradores sobre o novo evento
+            </span>
+          </label>
+        </div>
+
+        <!-- Validação Final -->
+        <% if @event.errors.any? || @activities.any?(&:invalid?) %>
+          <div class="bg-red-50 border border-red-200 rounded-md p-4">
+            <div class="flex">
+              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Existem erros que precisam ser corrigidos</h3>
+                <div class="mt-2 text-sm text-red-700">
+                  <ul class="list-disc pl-5 space-y-1">
+                    <% @event.errors.full_messages.each do |error| %>
+                      <li><%= error %></li>
+                    <% end %>
+                    <% @activities.each_with_index do |activity, index| %>
+                      <% activity.errors.full_messages.each do |error| %>
+                        <li>Atividade <%= index + 1 %>: <%= error %></li>
+                      <% end %>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Botões -->
+      <div class="flex justify-between items-center mt-8 pt-6 border-t border-blue-200">
+        <div class="space-x-4">
+          <%= link_to "Voltar para Agenda", new_event_path(step: 2), 
+              class: "px-4 py-2 border border-blue-300 rounded-md text-blue-700 hover:bg-blue-100" %>
+          
+          <%= link_to "Editar Informações", new_event_path(step: 1), 
+              class: "px-4 py-2 text-blue-600 hover:text-blue-800" %>
+        </div>
+
+        <div class="space-x-3">
+          <%= link_to "Cancelar Tudo", destroy_session_events_path, method: :delete,
+              confirm: "Tem certeza que deseja cancelar? Todos os dados serão perdidos.",
+              class: "px-4 py-2 text-red-600 hover:text-red-800" %>
+          
+          <%= form.submit "🎉 Criar Evento", 
+              class: "px-8 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
