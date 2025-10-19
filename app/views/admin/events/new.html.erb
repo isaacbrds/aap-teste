@@ -1,0 +1,179 @@
+<div data-controller="event-form">
+  
+  <!-- FORMULÁRIO DO EVENTO (seu código original) -->
+  <div data-event-form-target="eventForm">
+    <%= simple_form_for [:admin, @event], html: { autocomplete: "off" }  do |form| %>
+      <div class="container">
+        <div class="row mt-4">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="text-center font-weight-light my-4">
+                <i class="bi bi-calendar2-event me-2"></i>
+                <% if @event.new_record? %> Novo Evento <% else %> Editar Evento <% end %>
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12 col-md-6">
+                  <%= form.input :name %>
+                </div>
+                <div class="col-12 col-md-6">
+                  <%= form.input :status, collection: { 'Inscrições Abertas': 'registrations_open',
+                                                        'Evento em andamento': 'event_in_progress',
+                                                        'Evento encerrado': 'event_closed',
+                                                        'Cancelado': 'cancelled' },
+                                          include_blank: false %>
+                </div>
+                <hr>
+                <span><i class="bi bi-geo-alt me-2 "></i> Data e Local do Evento</span>
+                <div class="col-12 col-md-6 mt-3">
+                  <%= form.input :period_start, html5: true %>
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                  <%= form.input :period_end, html5: true %>
+                </div>
+                <div class="col-12 col-md-12 mb-3">
+                  <%= form.input :local %>
+                </div>
+                <hr>
+                <span><i class="bi bi-info-circle me-2 "></i> Informações do Evento</span>
+                <div class="col-12 col-md-6 mt-3">
+                  <%= form.input :email %>
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                  <%= form.input :responsable %>
+                </div>
+                <div class="col-12 col-md-6">
+                  <%= form.input :banner %>
+                </div>
+                <div class="col-12 col-md-6 mb-3">
+                  <%= form.input :comission %>
+                </div>
+                <div class="col-12 col-md-12 mb-3">
+                  <%= form.label :txtEnter %>
+                  <%= form.rich_text_area :txtEnter %>
+                </div>
+                <div class="col-12 col-md-12 mb-3">
+                  <%= form.label :txtAbout %>
+                  <%= form.rich_text_area :txtAbout %>
+                </div>
+                <hr>
+                <span><i class="bi bi-gear me-2 "></i> Configurações do HotSite</span>
+                <div class="col-12 col-md-6 mt-3">
+                  <%= form.input :primaryColor, as: :color %>
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                  <%= form.input :secondaryColor, as: :color %>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <%= link_to 'Voltar', admin_events_path, class: 'btn btn-secondary' %>
+              <button type="button" 
+                      class="btn btn-primary" 
+                      data-action="event-form#nextToActivities">
+                Próximo: Cadastrar Atividades <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- LISTA DE ATIVIDADES -->
+  <div data-event-form-target="activitiesList" class="hidden">
+    <div class="container">
+      <div class="row mt-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-around align-items-center">
+            <h3 class="text-center font-weight-light my-4">
+              <i class="bi bi-calendar-event me-2"></i> Atividades do Evento
+            </h3>
+            <button type="button" 
+                    class="btn btn-success" 
+                    data-action="event-form#openModal">
+              Adicionar Nova Atividade <i class="bi bi-plus-circle"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <div data-event-form-target="activitiesContainer">
+              <!-- JS vai preencher aqui -->
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <button type="button" 
+                    class="btn btn-outline-primary" 
+                    data-action="event-form#backToEvent">
+              <i class="bi bi-arrow-left"></i> Voltar ao Evento
+            </button>
+            <button type="button" 
+                    class="btn btn-outline-success" 
+                    data-action="event-form#backToEvent">
+              Finalizar Cadastro do Evento <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PARA CADASTRO DE ATIVIDADES -->
+  <div data-event-form-target="activitiesModal" class="modal hidden">
+    <div class="modal-content">
+      <button type="button" 
+              class="close"
+              data-action="event-form#closeModal">&times;</button>
+      <h2>Adicionar Nova Atividade </h2>
+      <form class="mb-0" autocomplete="off">
+        <div class="row">
+          <div class="col-12 col-md-6">
+            <label>Nome da Atividade</label>
+            <input type="text" class="form-control" data-event-form-target="activityName" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Título</label>
+            <input type="text" class="form-control" data-event-form-target="activityTitle" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Local</label>
+            <input type="text" class="form-control" data-event-form-target="activityLocal">
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Palestrante</label>
+            <input type="text" class="form-control" data-event-form-target="activitySpeaker">
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Início</label>
+            <input type="datetime-local" class="form-control" data-event-form-target="activityPeriodStart">
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Fim</label>
+            <input type="datetime-local" class="form-control" data-event-form-target="activityPeriodEnd">
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Carga horária do certificado</label>
+            <input type="number" min="0" step="0.1" class="form-control" data-event-form-target="activityCertificateHours">
+          </div>
+          <div class="col-12 col-md-6">
+            <label>Inscrições abertas?</label>
+            <select class="form-control" data-event-form-target="activitySubscriptionsOpen">
+              <option value="">Selecione...</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+        </div>
+        <div class="text-end mt-3">
+          <button class="btn btn-primary" type="submit" data-event-form-target="addActivityButton" data-action="event-form#addActivity">
+            Adicionar Atividade
+          </button>
+          <button class="btn btn-primary hidden" type="submit" data-event-form-target="updateActivityButton" data-action="event-form#updateActivity">
+            Editar Atividade
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
