@@ -3,6 +3,18 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "eventForm",
+    "eventName",
+    "eventEmail",
+    "eventResponsable",
+    "eventBanner",
+    "eventPeriodStart",
+    "eventPeriodEnd",
+    "eventLocal",
+    "eventComission",
+    "eventTxtEnter",
+    "eventTxtAbout",
+    "eventPrimaryColor",
+    "eventSecondaryColor",
     "activitiesList",
     "activitiesModal",
     "activitiesContainer",
@@ -14,6 +26,8 @@ export default class extends Controller {
     "activityPeriodEnd",
     "activityCertificateHours",
     "activitySubscriptionsOpen",
+    "eventResume",
+    "activitiesResumeContainer",
     "addActivityButton",
     "updateActivityButton"
   ]
@@ -29,12 +43,39 @@ export default class extends Controller {
     event.preventDefault()
     console.log("Indo para atividades")
     if (this.validateEventForm()) {
-      const formData = new FormData(this.eventFormTarget.querySelector('form'))
+      const form = this.eventFormTarget.querySelector('form')
+      const formData = new FormData(form)
       const eventData = {}
       formData.forEach((value, key) => {
-        eventData[key] = value
+        const cleanKey = key.replace(/^event\[/, '').replace(/\]$/, '')
+        if(cleanKey !== 'banner') {
+          eventData[cleanKey] = value
+        }
       })
+
+      const bannerInput = form.querySelector('input[name="event[banner]"]')
+      if (bannerInput && bannerInput.files.length > 0) {
+        const file = bannerInput.files[0]
+        
+        // Cria URL temporária para a imagem
+        const imageUrl = URL.createObjectURL(file)
+        
+        eventData.bannerUrl = imageUrl
+        eventData.bannerName = file.name
+        eventData.bannerSize = file.size
+        
+        console.log('Banner processado:', {
+          name: file.name,
+          size: file.size,
+          url: imageUrl
+        })
+      } else {
+        console.log('Nenhum banner selecionado')
+      }
+
+
       // Salva como string
+      console.log('Dados salvos:', eventData) // Para debug
       sessionStorage.setItem('eventData', JSON.stringify(eventData))
       this.hideEventForm()
       this.showActivitiesList()
@@ -48,19 +89,103 @@ export default class extends Controller {
     this.showEventForm()
   }
 
+  backToActivities(event) {
+    event.preventDefault()
+    this.eventResumeTarget.classList.add("hidden")
+    this.showActivitiesList()
+  }
+
   showEventForm() {
     this.eventFormTarget.classList.remove("hidden")
     if(sessionStorage.getItem('eventData')) {
       const eventData = JSON.parse(sessionStorage.getItem('eventData'))
       const form = this.eventFormTarget.querySelector('form')
       for (const [key, value] of Object.entries(eventData)) {
-        const input = form.querySelector(`[name="${key}"]`)
+        // const input = form.querySelector(`[name="${key}"]`)
+        const input = form.querySelector(`[name="event[${key}]"]`)
         if (input) {
           input.value = value
         }
       }
     }
     this.activitiesListTarget.classList.add("hidden")
+  }
+
+ showEventResume() {
+    this.hideActivitiesList()
+    this.eventResumeTarget.classList.remove("hidden")
+    
+    const eventData = JSON.parse(sessionStorage.getItem('eventData'))
+    console.log('Dados do evento:', eventData) // Para debug
+    
+    // Use os nomes que vêm do Rails (event[campo])
+    this.eventNameTarget.textContent = eventData.name || 'Não informado'
+    this.eventEmailTarget.textContent = eventData.email || 'Não informado'
+    this.eventResponsableTarget.textContent = eventData.responsable || 'Não informado'
+    this.eventPeriodStartTarget.textContent = eventData.period_start || 'Não informado'
+    this.eventLocalTarget.textContent = eventData.local || 'Não informado'
+    // Banner com preview
+    if (eventData.bannerUrl) {
+      this.eventBannerTarget.innerHTML = `
+        <div class="d-flex align-items-center">
+          <img src="${eventData.bannerUrl}" 
+              alt="Banner do evento" 
+              class="me-3"
+              style="max-width: 200px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+          <div>
+            <strong>${eventData.bannerName}</strong><br>
+            <small class="text-muted">${this.formatFileSize(eventData.bannerSize)}</small>
+          </div>
+        </div>
+      `
+    } else {
+      this.eventBannerTarget.innerHTML = '<span class="text-muted">Nenhuma imagem selecionada</span>'
+    }
+    this.renderActivitiesResume()
+  }
+
+  renderActivitiesResume() {
+    let activities = JSON.parse(sessionStorage.getItem('activities')) || []
+    const container = this.activitiesResumeContainerTarget
+    
+    container.innerHTML = ""
+    
+    if (activities.length === 0) {
+      container.innerHTML = '<p class="text-muted">Nenhuma atividade cadastrada.</p>'
+    } else {
+      let html = '<h4>Atividades do Evento:</h4>'
+      
+      activities.forEach((activity, index) => {
+        html += `
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">${activity.name || 'Sem nome'}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">${activity.title || 'Sem título'}</h6>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Local:</strong> ${activity.local || 'Não informado'}</p>
+                  <p><strong>Palestrante:</strong> ${activity.speaker || 'Não informado'}</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Início:</strong> ${activity.period_start ? new Date(activity.period_start).toLocaleString('pt-BR') : 'Não informado'}</p>
+                  <p><strong>Fim:</strong> ${activity.period_end ? new Date(activity.period_end).toLocaleString('pt-BR') : 'Não informado'}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Carga Horária:</strong> ${activity.certificate_hours || 'Não informado'} horas</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Inscrições:</strong> ${activity.subscriptions_open === 'true' ? 'Abertas' : activity.subscriptions_open === 'false' ? 'Fechadas' : 'Não informado'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      })
+      
+      container.innerHTML = html
+    }
   }
 
   hideEventForm() {
@@ -134,6 +259,17 @@ export default class extends Controller {
 
     this.closeModal()
     this.renderActivitiesList()
+  }
+
+  // Método auxiliar para formatar tamanho do arquivo
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes'
+    
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   renderActivitiesList() {

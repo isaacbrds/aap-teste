@@ -109,7 +109,7 @@
             </button>
             <button type="button" 
                     class="btn btn-outline-success" 
-                    data-action="event-form#backToEvent">
+                    data-action="event-form#showEventResume">
               Finalizar Cadastro do Evento <i class="bi bi-arrow-right"></i>
             </button>
           </div>
@@ -117,6 +117,83 @@
       </div>
     </div>
   </div>
+
+  <!-- Dentro da sua tela de resumo -->
+  <div data-event-form-target="eventResume" class="hidden">
+    <div class="container">
+      <div class="row mt-4">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="text-center font-weight-light my-4">
+              <i class="bi bi-eye me-2"></i> Resumo do Evento
+            </h3>
+          </div>
+          <div class="card-body">
+            <!-- Dados do evento -->
+            <div class="row">
+              <div class="col-7 col-md-7">
+                <div class="card">
+                  <div class="card-body">
+                    <h3>
+                      Revisão Final
+                    </h3>
+                    <p>
+                      Confira alguns detalhes do evento e das atividades cadastradas para garantir que tudo esteja correto.
+                    </p>
+                    <p>Organizador:</p>
+                    <p>
+                      <span data-event-form-target="eventResponsable"></span>
+                    </p>
+                    <p>Email:</p>
+                    <p>
+                      <span data-event-form-target="eventEmail"></span>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Container das atividades -->
+                <div data-event-form-target="activitiesResumeContainer">
+                  <!-- JavaScript vai preencher aqui -->
+                </div>
+              </div>
+              <div class="col-5 col-md-5">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <strong>Banner do Evento:</strong><br>
+                      <div data-event-form-target="eventBanner" class="mt-2">
+                        <!-- JavaScript vai preencher aqui -->
+                      </div>
+                    </div>
+                    <h4>
+                      <span data-event-form-target="eventName"></span>
+                    </h4>
+                    <div class="d-flex justify-content-between">
+                      <span><i class="bi bi-calendar-event me-2"></i> Data: <strong><span data-event-form-target="eventPeriodStart"></span></strong></span>
+                      <span><i class="bi bi-geo-alt me-2"></i> Local: <strong><span data-event-form-target="eventLocal"></span></strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <button type="button" 
+                    class="btn btn-outline-primary" 
+                    data-action="event-form#backToActivities">
+              <i class="bi bi-arrow-left"></i> Voltar às Atividades
+            </button>
+            <button type="button" 
+                    class="btn btn-success" 
+                    data-action="event-form#finalizeEvent">
+              Finalizar Cadastro <i class="bi bi-check-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- MODAL PARA CADASTRO DE ATIVIDADES -->
   <div data-event-form-target="activitiesModal" class="modal hidden">
