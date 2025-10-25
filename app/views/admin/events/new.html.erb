@@ -1,203 +1,314 @@
-<div data-controller="event-form">
-  
-  <!-- FORMULÁRIO DO EVENTO (seu código original) -->
-  <div data-event-form-target="eventForm">
-    <%= simple_form_for [:admin, @event], html: { autocomplete: "off" }  do |form| %>
-      <div class="container">
-        <div class="row mt-4">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="text-center font-weight-light my-4">
-                <i class="bi bi-calendar2-event me-2"></i>
-                <% if @event.new_record? %> Novo Evento <% else %> Editar Evento <% end %>
-              </h3>
+<div data-controller="event-form" class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      
+      <!-- Header do Evento -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="mb-1">
+            <% if @event.new_record? %>
+              <i class="bi bi-plus-circle me-2"></i>Novo Evento
+            <% else %>
+              <i class="bi bi-pencil me-2"></i>Editar Evento
+            <% end %>
+          </h2>
+          <small class="text-muted">Configure todos os detalhes do seu evento</small>
+        </div>
+        <div>
+          <%= link_to admin_events_path, class: "btn btn-outline-secondary" do %>
+            <i class="bi bi-arrow-left"></i> Voltar
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" 
+                  data-event-form-target="tabButton"
+                  data-tab="basico"
+                  data-action="event-form#switchTab"
+                  type="button">
+            <i class="bi bi-info-circle me-2"></i>Básico
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" 
+                  data-event-form-target="tabButton"
+                  data-tab="agenda"
+                  data-action="event-form#switchTab"
+                  type="button">
+            <i class="bi bi-calendar-event me-2"></i>Agenda
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" 
+                  data-event-form-target="tabButton"
+                  data-tab="ingressos"
+                  data-action="event-form#switchTab"
+                  type="button">
+            <i class="bi bi-ticket me-2"></i>Ingressos
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" 
+                  data-event-form-target="tabButton"
+                  data-tab="publicar"
+                  data-action="event-form#switchTab"
+                  type="button">
+            <i class="bi bi-globe me-2"></i>Publicar
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        
+        <!-- TAB 1: BÁSICO -->
+        <div data-event-form-target="tabContent" data-tab="basico" class="tab-pane fade show active">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <%= simple_form_for [:admin, @event], html: { autocomplete: "off" } do |form| %>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <%= form.input :name, label: "Nome do Evento", input_html: { class: "form-control-lg" } %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= form.input :status, collection: { 
+                      'Inscrições Abertas': 'registrations_open',
+                      'Evento em andamento': 'event_in_progress',
+                      'Evento encerrado': 'event_closed',
+                      'Cancelado': 'cancelled' 
+                    }, include_blank: false %>
+                  </div>
+                  
+                  <div class="col-12"><hr class="my-4"></div>
+                  
+                  <div class="col-md-6">
+                    <%= form.input :period_start, label: "Data de Início", html5: true %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= form.input :period_end, label: "Data de Término", html5: true %>
+                  </div>
+                  <div class="col-12">
+                    <%= form.input :local, label: "Local do Evento" %>
+                  </div>
+                  
+                  <div class="col-12"><hr class="my-4"></div>
+                  
+                  <div class="col-md-6">
+                    <%= form.input :email, label: "Email de Contato" %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= form.input :responsable, label: "Responsável" %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= form.input :banner, label: "Banner do Evento" %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= form.input :comission, label: "Comissão" %>
+                  </div>
+                  
+                  <div class="col-12"><hr class="my-4"></div>
+                  
+                  <div class="col-12">
+                    <%= form.label :txtEnter, "Texto de Apresentação" %>
+                    <%= form.rich_text_area :txtEnter %>
+                  </div>
+                  <div class="col-12">
+                    <%= form.label :txtAbout, "Sobre o Evento" %>
+                    <%= form.rich_text_area :txtAbout %>
+                  </div>
+                  
+                  <div class="col-12"><hr class="my-4"></div>
+                  
+                  <div class="col-md-6">
+                    <%= form.input :primaryColor, label: "Cor Primária", as: :color %>
+                  </div>
+                  <div class="col-md-6">
+                    <%= form.input :secondaryColor, label: "Cor Secundária", as: :color %>
+                  </div>
+                </div>
+              <% end %>
             </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-12 col-md-6">
-                  <%= form.input :name %>
-                </div>
-                <div class="col-12 col-md-6">
-                  <%= form.input :status, collection: { 'Inscrições Abertas': 'registrations_open',
-                                                        'Evento em andamento': 'event_in_progress',
-                                                        'Evento encerrado': 'event_closed',
-                                                        'Cancelado': 'cancelled' },
-                                          include_blank: false %>
-                </div>
-                <hr>
-                <span><i class="bi bi-geo-alt me-2 "></i> Data e Local do Evento</span>
-                <div class="col-12 col-md-6 mt-3">
-                  <%= form.input :period_start, html5: true %>
-                </div>
-                <div class="col-12 col-md-6 mt-3">
-                  <%= form.input :period_end, html5: true %>
-                </div>
-                <div class="col-12 col-md-12 mb-3">
-                  <%= form.input :local %>
-                </div>
-                <hr>
-                <span><i class="bi bi-info-circle me-2 "></i> Informações do Evento</span>
-                <div class="col-12 col-md-6 mt-3">
-                  <%= form.input :email %>
-                </div>
-                <div class="col-12 col-md-6 mt-3">
-                  <%= form.input :responsable %>
-                </div>
-                <div class="col-12 col-md-6">
-                  <%= form.input :banner %>
-                </div>
-                <div class="col-12 col-md-6 mb-3">
-                  <%= form.input :comission %>
-                </div>
-                <div class="col-12 col-md-12 mb-3">
-                  <%= form.label :txtEnter %>
-                  <%= form.rich_text_area :txtEnter %>
-                </div>
-                <div class="col-12 col-md-12 mb-3">
-                  <%= form.label :txtAbout %>
-                  <%= form.rich_text_area :txtAbout %>
-                </div>
-                <hr>
-                <span><i class="bi bi-gear me-2 "></i> Configurações do HotSite</span>
-                <div class="col-12 col-md-6 mt-3">
-                  <%= form.input :primaryColor, as: :color %>
-                </div>
-                <div class="col-12 col-md-6 mt-3">
-                  <%= form.input :secondaryColor, as: :color %>
-                </div>
-              </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between">
-              <%= link_to 'Voltar', admin_events_path, class: 'btn btn-secondary' %>
+            <div class="card-footer bg-light d-flex justify-content-between">
+              <div></div>
               <button type="button" 
-                      class="btn btn-primary" 
-                      data-action="event-form#nextToActivities">
-                Próximo: Cadastrar Atividades <i class="bi bi-arrow-right"></i>
+                      class="btn btn-primary"
+                      data-action="event-form#saveAndNextTab">
+                Salvar e Continuar <i class="bi bi-arrow-right"></i>
               </button>
             </div>
           </div>
         </div>
-      </div>
-    <% end %>
-  </div>
 
-  <!-- LISTA DE ATIVIDADES -->
-  <div data-event-form-target="activitiesList" class="hidden">
-    <div class="container">
-      <div class="row mt-4">
-        <div class="card">
-          <div class="card-header d-flex justify-content-around align-items-center">
-            <h3 class="text-center font-weight-light my-4">
-              <i class="bi bi-calendar-event me-2"></i> Atividades do Evento
-            </h3>
-            <button type="button" 
-                    class="btn btn-success" 
-                    data-action="event-form#openModal">
-              Adicionar Nova Atividade <i class="bi bi-plus-circle"></i>
-            </button>
-          </div>
-          <div class="card-body">
-            <div data-event-form-target="activitiesContainer">
-              <!-- JS vai preencher aqui -->
-            </div>
-          </div>
-          <div class="card-footer d-flex justify-content-between">
-            <button type="button" 
-                    class="btn btn-outline-primary" 
-                    data-action="event-form#backToEvent">
-              <i class="bi bi-arrow-left"></i> Voltar ao Evento
-            </button>
-            <button type="button" 
-                    class="btn btn-outline-success" 
-                    data-action="event-form#showEventResume">
-              Finalizar Cadastro do Evento <i class="bi bi-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dentro da sua tela de resumo -->
-  <div data-event-form-target="eventResume" class="hidden">
-    <div class="container">
-      <div class="row mt-4">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="text-center font-weight-light my-4">
-              <i class="bi bi-eye me-2"></i> Resumo do Evento
-            </h3>
-          </div>
-          <div class="card-body">
-            <!-- Dados do evento -->
-            <div class="row">
-              <div class="col-7 col-md-7">
-                <div class="card">
-                  <div class="card-body">
-                    <h3>
-                      Revisão Final
-                    </h3>
-                    <p>
-                      Confira alguns detalhes do evento e das atividades cadastradas para garantir que tudo esteja correto.
-                    </p>
-                    <p>Organizador:</p>
-                    <p>
-                      <span data-event-form-target="eventResponsable"></span>
-                    </p>
-                    <p>Email:</p>
-                    <p>
-                      <span data-event-form-target="eventEmail"></span>
-                    </p>
+        <!-- TAB 2: AGENDA -->
+        <div data-event-form-target="tabContent" data-tab="agenda" class="tab-pane fade">
+          <div class="row g-4">
+            
+            <!-- Coluna Principal - Constructor de Agenda -->
+            <div class="col-lg-8">
+              <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <h4 class="mb-1">Constructor de agenda</h4>
+                      <p class="text-muted mb-0">Defina as sessões do evento com horários, tópicos e palestrantes.</p>
+                    </div>
+                    <button type="button" 
+                            class="btn btn-outline-primary"
+                            data-action="event-form#openModal">
+                      <i class="bi bi-plus-circle"></i> Adicionar sessão
+                    </button>
+                  </div>
+                  
+                  <!-- Lista de Sessões da Agenda -->
+                  <div data-event-form-target="activitiesContainer" class="agenda-sessions">
+                    <!-- JavaScript vai preencher aqui -->
+                  </div>
+                  
+                  <!-- Configurações da Agenda -->
+                  <div class="row mt-4 pt-4 border-top">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Data da agenda</label>
+                      <input type="date" class="form-control" data-event-form-target="agendaDate">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Fuso horário</label>
+                      <select class="form-control" data-event-form-target="timezone">
+                        <option value="BRT">BRT (UTC-3)</option>
+                        <option value="PDT">PDT (UTC-7)</option>
+                        <option value="GMT">GMT (UTC+0)</option>
+                        <option value="EST">EST (UTC-5)</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
-
-                <!-- Container das atividades -->
-                <div data-event-form-target="activitiesResumeContainer">
-                  <!-- JavaScript vai preencher aqui -->
-                </div>
-              </div>
-              <div class="col-5 col-md-5">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="mb-3">
-                      <strong>Banner do Evento:</strong><br>
-                      <div data-event-form-target="eventBanner" class="mt-2">
-                        <!-- JavaScript vai preencher aqui -->
-                      </div>
-                    </div>
-                    <h4>
-                      <span data-event-form-target="eventName"></span>
-                    </h4>
-                    <div class="d-flex justify-content-between">
-                      <span><i class="bi bi-calendar-event me-2"></i> Data: <strong><span data-event-form-target="eventPeriodStart"></span></strong></span>
-                      <span><i class="bi bi-geo-alt me-2"></i> Local: <strong><span data-event-form-target="eventLocal"></span></strong></span>
-                    </div>
+                
+                <div class="card-footer bg-light d-flex justify-content-between">
+                  <button type="button" 
+                          class="btn btn-outline-secondary"
+                          data-action="event-form#previousTab">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                  </button>
+                  <div class="d-flex gap-2">
+                    <button type="button" 
+                            class="btn btn-outline-primary"
+                            data-action="event-form#saveChanges">
+                      Salvar alterações
+                    </button>
+                    <button type="button" 
+                            class="btn btn-outline-info"
+                            data-action="event-form#previewAgenda">
+                      <i class="bi bi-eye"></i> Visualizar
+                    </button>
+                    <button type="button" 
+                            class="btn btn-outline-warning"
+                            data-action="event-form#autoReorder">
+                      <i class="bi bi-arrow-up-down"></i> Reordenar automaticamente
+                    </button>
+                    <button type="button" 
+                            class="btn btn-primary"
+                            data-action="event-form#saveAndNextTab">
+                      Continuar para ingressos <i class="bi bi-arrow-right"></i>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="card-footer d-flex justify-content-between">
-            <button type="button" 
-                    class="btn btn-outline-primary" 
-                    data-action="event-form#backToActivities">
-              <i class="bi bi-arrow-left"></i> Voltar às Atividades
-            </button>
-            <button type="button" 
-                    class="btn btn-success" 
-                    data-action="event-form#finalizeEvent">
-              Finalizar Cadastro <i class="bi bi-check-lg"></i>
-            </button>
+
+            <!-- Coluna Lateral - Preview e Palestrantes -->
+            <div class="col-lg-4">
+              
+              <!-- Preview da Agenda -->
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                  <h5 class="card-title mb-3">
+                    <i class="bi bi-eye me-2"></i>Pré-visualização da agenda
+                  </h5>
+                  
+                  <div class="preview-event-info">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-calendar3 me-2 text-primary"></i>
+                      <span data-event-form-target="previewDate">21 set 2025</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-clock me-2 text-primary"></i>
+                      <span data-event-form-target="previewTime">09:30 – 17:00</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="bi bi-geo-alt me-2 text-primary"></i>
+                      <span data-event-form-target="previewLocation">Local do evento</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-people me-2 text-primary"></i>
+                      <span data-event-form-target="previewCapacity">Capacidade: 250</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Palestrantes -->
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                  <h5 class="card-title mb-3">
+                    <i class="bi bi-person-badge me-2"></i>Palestrantes
+                  </h5>
+                  
+                  <div data-event-form-target="speakersList" class="speakers-list">
+                    <!-- JavaScript vai preencher aqui -->
+                  </div>
+                  
+                  <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Gerencie palestrantes na sessão correspondente.
+                  </small>
+                </div>
+              </div>
+
+              <!-- Dicas -->
+              <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-4">
+                  <h6 class="card-title text-primary mb-2">
+                    <i class="bi bi-lightbulb me-2"></i>Dica
+                  </h6>
+                  <small class="text-muted">
+                    Mantenha títulos curtos e claros; inclui objetivo e resultado para cada sessão.
+                  </small>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
+        <!-- TAB 3: INGRESSOS -->
+        <div data-event-form-target="tabContent" data-tab="ingressos" class="tab-pane fade">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h4>Configuração de Ingressos</h4>
+              <p class="text-muted">Em desenvolvimento...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: PUBLICAR -->
+        <div data-event-form-target="tabContent" data-tab="publicar" class="tab-pane fade">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h4>Publicar Evento</h4>
+              <p class="text-muted">Resumo final e publicação...</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-
-  <!-- MODAL PARA CADASTRO DE ATIVIDADES -->
+  <!-- Modal para Adicionar Atividade -->
   <div data-event-form-target="activitiesModal" class="modal hidden">
-    <div class="modal-content">
+    <!-- Seu modal atual aqui -->
+     <div class="modal-content">
       <button type="button" 
               class="close"
               data-action="event-form#closeModal">&times;</button>
@@ -252,5 +363,4 @@
       </form>
     </div>
   </div>
-  
 </div>
