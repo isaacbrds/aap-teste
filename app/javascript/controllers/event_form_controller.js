@@ -1,394 +1,4 @@
-// import { Controller } from "@hotwired/stimulus"
-
-// export default class extends Controller {
-//   static targets = [
-//     "eventForm",
-//     "eventName",
-//     "eventEmail",
-//     "eventResponsable",
-//     "eventBanner",
-//     "eventPeriodStart",
-//     "eventPeriodEnd",
-//     "eventLocal",
-//     "eventComission",
-//     "eventTxtEnter",
-//     "eventTxtAbout",
-//     "eventPrimaryColor",
-//     "eventSecondaryColor",
-//     "activitiesList",
-//     "activitiesModal",
-//     "activitiesContainer",
-//     "activityName",
-//     "activityTitle",
-//     "activityLocal",
-//     "activitySpeaker",
-//     "activityPeriodStart",
-//     "activityPeriodEnd",
-//     "activityCertificateHours",
-//     "activitySubscriptionsOpen",
-//     "eventResume",
-//     "activitiesResumeContainer",
-//     "addActivityButton",
-//     "updateActivityButton"
-//   ]
-
-//   connect() {
-//     this.showEventForm()
-//     this.renderActivitiesList()
-//     this.activityIndex = 0
-//   }
-
-//   // Ao clicar em Próximo: salva dados do evento e mostra as atividades
-//   nextToActivities(event) {
-//     event.preventDefault()
-//     console.log("Indo para atividades")
-//     if (this.validateEventForm()) {
-//       const form = this.eventFormTarget.querySelector('form')
-//       const formData = new FormData(form)
-//       const eventData = {}
-//       formData.forEach((value, key) => {
-//         const cleanKey = key.replace(/^event\[/, '').replace(/\]$/, '')
-//         if(cleanKey !== 'banner') {
-//           eventData[cleanKey] = value
-//         }
-//       })
-
-//       const bannerInput = form.querySelector('input[name="event[banner]"]')
-//       if (bannerInput && bannerInput.files.length > 0) {
-//         const file = bannerInput.files[0]
-        
-//         // Cria URL temporária para a imagem
-//         const imageUrl = URL.createObjectURL(file)
-        
-//         eventData.bannerUrl = imageUrl
-//         eventData.bannerName = file.name
-//         eventData.bannerSize = file.size
-        
-//         console.log('Banner processado:', {
-//           name: file.name,
-//           size: file.size,
-//           url: imageUrl
-//         })
-//       } else {
-//         console.log('Nenhum banner selecionado')
-//       }
-
-
-//       // Salva como string
-//       console.log('Dados salvos:', eventData) // Para debug
-//       sessionStorage.setItem('eventData', JSON.stringify(eventData))
-//       this.hideEventForm()
-//       this.showActivitiesList()
-//     }
-//   }
-
-//   // Volta para o formulário do evento
-//   backToEvent(event) {
-//     event.preventDefault()
-//     this.hideActivitiesList()
-//     this.showEventForm()
-//   }
-
-//   backToActivities(event) {
-//     event.preventDefault()
-//     this.eventResumeTarget.classList.add("hidden")
-//     this.showActivitiesList()
-//   }
-
-//   showEventForm() {
-//     this.eventFormTarget.classList.remove("hidden")
-//     if(sessionStorage.getItem('eventData')) {
-//       const eventData = JSON.parse(sessionStorage.getItem('eventData'))
-//       const form = this.eventFormTarget.querySelector('form')
-//       for (const [key, value] of Object.entries(eventData)) {
-//         // const input = form.querySelector(`[name="${key}"]`)
-//         const input = form.querySelector(`[name="event[${key}]"]`)
-//         if (input) {
-//           input.value = value
-//         }
-//       }
-//     }
-//     this.activitiesListTarget.classList.add("hidden")
-//   }
-
-//  showEventResume() {
-//     this.hideActivitiesList()
-//     this.eventResumeTarget.classList.remove("hidden")
-    
-//     const eventData = JSON.parse(sessionStorage.getItem('eventData'))
-//     console.log('Dados do evento:', eventData) // Para debug
-    
-//     // Use os nomes que vêm do Rails (event[campo])
-//     this.eventNameTarget.textContent = eventData.name || 'Não informado'
-//     this.eventEmailTarget.textContent = eventData.email || 'Não informado'
-//     this.eventResponsableTarget.textContent = eventData.responsable || 'Não informado'
-//     this.eventPeriodStartTarget.textContent = eventData.period_start || 'Não informado'
-//     this.eventLocalTarget.textContent = eventData.local || 'Não informado'
-//     // Banner com preview
-//     if (eventData.bannerUrl) {
-//       this.eventBannerTarget.innerHTML = `
-//         <div class="d-flex align-items-center">
-//           <img src="${eventData.bannerUrl}" 
-//               alt="Banner do evento" 
-//               class="me-3"
-//               style="max-width: 200px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
-//           <div>
-//             <strong>${eventData.bannerName}</strong><br>
-//             <small class="text-muted">${this.formatFileSize(eventData.bannerSize)}</small>
-//           </div>
-//         </div>
-//       `
-//     } else {
-//       this.eventBannerTarget.innerHTML = '<span class="text-muted">Nenhuma imagem selecionada</span>'
-//     }
-//     this.renderActivitiesResume()
-//   }
-
-//   renderActivitiesResume() {
-//     let activities = JSON.parse(sessionStorage.getItem('activities')) || []
-//     const container = this.activitiesResumeContainerTarget
-    
-//     container.innerHTML = ""
-    
-//     if (activities.length === 0) {
-//       container.innerHTML = '<p class="text-muted">Nenhuma atividade cadastrada.</p>'
-//     } else {
-//       let html = '<h4>Atividades do Evento:</h4>'
-      
-//       activities.forEach((activity, index) => {
-//         html += `
-//           <div class="card mb-3">
-//             <div class="card-body">
-//               <h5 class="card-title">${activity.name || 'Sem nome'}</h5>
-//               <h6 class="card-subtitle mb-2 text-muted">${activity.title || 'Sem título'}</h6>
-//               <div class="row">
-//                 <div class="col-md-6">
-//                   <p><strong>Local:</strong> ${activity.local || 'Não informado'}</p>
-//                   <p><strong>Palestrante:</strong> ${activity.speaker || 'Não informado'}</p>
-//                 </div>
-//                 <div class="col-md-6">
-//                   <p><strong>Início:</strong> ${activity.period_start ? new Date(activity.period_start).toLocaleString('pt-BR') : 'Não informado'}</p>
-//                   <p><strong>Fim:</strong> ${activity.period_end ? new Date(activity.period_end).toLocaleString('pt-BR') : 'Não informado'}</p>
-//                 </div>
-//               </div>
-//               <div class="row">
-//                 <div class="col-md-6">
-//                   <p><strong>Carga Horária:</strong> ${activity.certificate_hours || 'Não informado'} horas</p>
-//                 </div>
-//                 <div class="col-md-6">
-//                   <p><strong>Inscrições:</strong> ${activity.subscriptions_open === 'true' ? 'Abertas' : activity.subscriptions_open === 'false' ? 'Fechadas' : 'Não informado'}</p>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         `
-//       })
-      
-//       container.innerHTML = html
-//     }
-//   }
-
-//   hideEventForm() {
-//     this.eventFormTarget.classList.add("hidden")
-//   }
-
-//   showActivitiesList() {
-//     this.activitiesListTarget.classList.remove("hidden")
-//     this.renderActivitiesList()
-//   }
-
-//   hideActivitiesList() {
-//     this.activitiesListTarget.classList.add("hidden")
-//   }
-
-//   // ------ Atividades ------
-//   openModal() {
-//     this.activitiesModalTarget.classList.remove("hidden")
-//     console.log(this.activitiesModalTarget);
-//     console.log("Abrindo modal de atividades")
-//     // Limpa o modal
-//     this.limpaModal()
-//   }
-
-//   limpaModal() {
-//     this.activityNameTarget.value = ''
-//     this.activityTitleTarget.value = ''
-//     this.activityLocalTarget.value = ''
-//     this.activitySpeakerTarget.value = ''
-//     this.activityPeriodStartTarget.value = ''
-//     this.activityPeriodEndTarget.value = ''
-//     this.activityCertificateHoursTarget.value = ''
-//     this.activitySubscriptionsOpenTarget.value = ''
-//   }
-
-//   closeModal() {
-//     this.activitiesModalTarget.classList.add("hidden")
-//   }
-
-//   addActivity(event) {
-//     event.preventDefault()
-//     const name = this.activityNameTarget.value.trim()
-//     const title = this.activityTitleTarget.value.trim()
-//     const local = this.activityLocalTarget.value.trim()
-//     const speaker = this.activitySpeakerTarget.value.trim()
-//     const period_start = this.activityPeriodStartTarget.value
-//     const period_end = this.activityPeriodEndTarget.value
-//     const certificate_hours = this.activityCertificateHoursTarget.value
-//     const subscriptions_open = this.activitySubscriptionsOpenTarget.value
-
-//     if (!name || !title) {
-//       alert('Preencha pelo menos Nome e Título da atividade!')
-//       return
-//     }
-
-    
-
-//     let activities = JSON.parse(sessionStorage.getItem('activities')) || []
-//     activities.push({
-//       id: activities.length + 1,
-//       name: name,
-//       title: title,
-//       local: local,
-//       speaker: speaker,
-//       period_start: period_start,
-//       period_end: period_end,
-//       certificate_hours: certificate_hours,
-//       subscriptions_open: subscriptions_open
-//     })
-//     sessionStorage.setItem('activities', JSON.stringify(activities))
-
-//     this.closeModal()
-//     this.renderActivitiesList()
-//   }
-
-//   // Método auxiliar para formatar tamanho do arquivo
-//   formatFileSize(bytes) {
-//     if (bytes === 0) return '0 Bytes'
-    
-//     const k = 1024
-//     const sizes = ['Bytes', 'KB', 'MB', 'GB']
-//     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    
-//     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-//   }
-
-//   renderActivitiesList() {
-//     let activities = JSON.parse(sessionStorage.getItem('activities')) || []
-
-//     const container = this.activitiesContainerTarget
-//     container.innerHTML = "" // Limpa o container
-
-
-
-//     // 2. Condição de lista vazia
-//     if (activities.length === 0) {
-//       container.innerHTML += '<p class="text-center">Nenhuma atividade cadastrada ainda.</p>'
-//     } else {
-//       // 3. Cria a lista de atividades (Mantendo a sua estrutura original)
-//       let ul = document.createElement('ul')
-//       ul.className = "list-group list-group-flush" // Remove classes col e row desnecessárias aqui
-
-//       activities.forEach(activity => {
-//         // Seu botão de ID dentro do LI estava quebrando o layout,
-//         // então, estou reorganizando o LI para ter flexbox interno.
-//         let li = document.createElement('li')
-//         li.className = "list-group-item d-flex justify-content-between align-items-start" // Flexbox para alinhar conteúdo e botão de ID
-//         li.id = `activity-${activity.id}`
-        
-//         // Conteúdo da Atividade
-//         const contentDiv = document.createElement('div');
-//         contentDiv.innerHTML = `
-//             <strong>Nome:</strong> ${activity.name || ''} <br>
-//             <strong>Responsável:</strong> ${activity.speaker || ''} <br>
-//             <strong>Data de Início:</strong> ${activity.period_start || ''} <br>
-//             <strong>Data de Término:</strong> ${activity.period_end || ''} <br>
-//         `
-
-//         // Botão ID (Re-utilizando sua lógica)
-//         let editButton = document.createElement('button')
-//         editButton.className = "btn btn-sm btn-primary ml-2" 
-//         editButton.innerHTML = `<i class="bi bi-pencil"></i>`
-//         editButton.addEventListener('click', () => {
-//           this.editActivity(activity.id)
-//         })
-
-//         let removeButton = document.createElement('button')
-//         removeButton.className = "btn btn-sm btn-danger ml-2" 
-//         removeButton.innerHTML = `<i class="bi bi-trash"></i>`
-//         removeButton.addEventListener('click', () => {
-//           this.removeActivity(activity.id)
-//         })
-
-//         li.appendChild(contentDiv)
-//         li.appendChild(editButton)
-//         li.appendChild(removeButton)
-//         ul.appendChild(li)
-//       })
-//       container.appendChild(ul)
-//     }
-//   }
-
-//   editActivity(id) {
-//     // Lógica para editar a atividade com o ID fornecido
-//     this.activityIndex = JSON.parse(sessionStorage.getItem('activities')).findIndex(act => act.id === id)
-//     let activity = JSON.parse(sessionStorage.getItem('activities'))[this.activityIndex]
-//     this.activityNameTarget.value = activity.name
-//     this.activityTitleTarget.value = activity.title
-//     this.activityLocalTarget.value = activity.local
-//     this.activitySpeakerTarget.value = activity.speaker
-//     this.activityPeriodStartTarget.value = activity.period_start
-//     this.activityPeriodEndTarget.value = activity.period_end
-//     this.activityCertificateHoursTarget.value = activity.certificate_hours
-//     this.activitySubscriptionsOpenTarget.value = activity.subscriptions_open
-
-//     this.activitiesModalTarget.classList.remove("hidden")
-//     this.addActivityButtonTarget.classList.add("hidden")
-//     this.updateActivityButtonTarget.classList.remove("hidden")
-//   }
-
-//   updateActivity(event) {
-//     event.preventDefault()
-//     let activities = JSON.parse(sessionStorage.getItem('activities'))
-//     activities[this.activityIndex] = {
-//       id: activities[this.activityIndex].id,
-//       name: this.activityNameTarget.value,
-//       title: this.activityTitleTarget.value,
-//       local: this.activityLocalTarget.value,
-//       speaker: this.activitySpeakerTarget.value,
-//       period_start: this.activityPeriodStartTarget.value,
-//       period_end: this.activityPeriodEndTarget.value,
-//       certificate_hours: this.activityCertificateHoursTarget.value,
-//       subscriptions_open: this.activitySubscriptionsOpenTarget.value
-//     }
-//     sessionStorage.setItem('activities', JSON.stringify(activities))
-//     //
-//     // Lógica para atualizar a atividade
-//     // (Semelhante ao addActivity, mas atualiza o item existente)
-
-//     this.closeModal()
-//     this.addActivityButtonTarget.classList.remove("hidden")
-//     this.updateActivityButtonTarget.classList.add("hidden")
-//     this.renderActivitiesList()
-//   }
-
-//   removeActivity(id) {
-//     // Lógica para remover a atividade com o ID fornecido
-//     let activities = JSON.parse(sessionStorage.getItem('activities'))
-//     activities = activities.filter(act => act.id !== id)
-//     sessionStorage.setItem('activities', JSON.stringify(activities))
-//     this.renderActivitiesList()
-//   }
-//   // Validação simples
-//   validateEventForm() {
-//     const nameInput = this.eventFormTarget.querySelector('input[name*="[name]"]')
-//     if (!nameInput.value.trim()) {
-//       alert('Por favor, preencha o nome do evento')
-//       return false
-//     }
-//     return true
-//   }
-// }
-
+// controllers/event_form_controller.js
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -421,6 +31,24 @@ export default class extends Controller {
     "previewLocation",
     "previewTime",
     "previewDate",
+    
+    // Resumo do evento
+    "summaryEventName",
+    "summaryEventDate", 
+    "summaryEventLocation",
+    "summaryEventResponsible",
+    "summaryEventEmail",
+    "summaryEventBanner",
+    "summarySessionsCount",
+    "summaryAgenda",
+    "summarySpeakersCount",
+    "summarySpeakers",
+    "statusBasic",
+    "statusAgenda", 
+    "statusTickets",
+    "completionProgress",
+    "completionPercentage",
+    "eventStatus"
   ]
 
   connect() {
@@ -459,6 +87,10 @@ export default class extends Controller {
     // Ações específicas por tab
     if (tabName === "agenda") {
       this.renderActivitiesList()
+    }
+
+    if (tabName === 'publicar') {
+      this.updateEventSummary()
     }
   }
 
@@ -510,7 +142,7 @@ export default class extends Controller {
       eventData.bannerName = file.name
       eventData.bannerSize = file.size
     }
-    
+
     sessionStorage.setItem('eventData', JSON.stringify(eventData))
     console.log('Dados do evento salvos:', eventData)
   }
@@ -532,6 +164,7 @@ export default class extends Controller {
         input.value = value
       }
     }
+    
     
     console.log('Dados do evento carregados')
   }
@@ -733,18 +366,307 @@ export default class extends Controller {
         .map(a => new Date(a.period_start))
         .sort()
       
-      if (times.length > 0) {
-        const startTime = this.formatTime(times[0])
-        const endTime = activities
-          .filter(a => a.period_end)
-          .map(a => new Date(a.period_end))
-          .sort()
-          .pop()
-        
-        this.previewTimeTarget.textContent = `${startTime} – ${endTime ? this.formatTime(endTime) : '17:00'}`
+        if (times.length > 0) {
+          const startTime = this.formatTime(times[0])
+          const endTime = activities
+            .filter(a => a.period_end)
+            .map(a => new Date(a.period_end))
+            .sort()
+            .pop()
+          
+          this.previewTimeTarget.textContent = `${startTime} – ${endTime ? this.formatTime(endTime) : '17:00'}`
+        }
+      }
+    }
+  
+  updateEventSummary() {
+    console.log('Atualizando resumo do evento...')
+    
+    this.updateBasicInfo()
+    this.updateAgendaSummary() 
+    this.updateSpeakersSummary()
+    this.updateCompletionStatus()
+  }
+
+  // Atualiza informações básicas do evento
+  updateBasicInfo() {
+    const eventData = this.getEventData()
+
+    // Nome do evento
+    this.summaryEventNameTarget.textContent = eventData.name || 'Nome do evento não definido'
+    
+    // Data do evento
+    const startDate = eventData.period_start
+    const endDate = eventData.period_end
+    let dateText = 'Data não definida'
+    
+    if (startDate) {
+      const start = new Date(startDate)
+      if (endDate) {
+        const end = new Date(endDate)
+        if (start.toDateString() === end.toDateString()) {
+          // Mesmo dia
+          dateText = `${start.toLocaleDateString('pt-BR')} das ${start.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})} às ${end.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}`
+        } else {
+          // Dias diferentes
+          dateText = `${start.toLocaleDateString('pt-BR')} a ${end.toLocaleDateString('pt-BR')}`
+        }
+      } else {
+        dateText = start.toLocaleDateString('pt-BR')
+      }
+    }
+    this.summaryEventDateTarget.textContent = dateText
+    
+    // Outras informações
+    this.summaryEventLocationTarget.textContent = eventData.local || 'Local não definido'
+    this.summaryEventResponsibleTarget.textContent = eventData.responsable || 'Responsável não definido'
+    this.summaryEventEmailTarget.textContent = eventData.email || 'Email não definido'
+    
+    // Banner
+    if (eventData.bannerUrl) {
+      this.summaryEventBannerTarget.innerHTML = `
+        <img src="${eventData.bannerUrl}" 
+            alt="Banner do evento" 
+            style="width: 100%; height: 100%; object-fit: cover;">
+      `
+    } else {
+      this.summaryEventBannerTarget.innerHTML = `
+        <div class="banner-placeholder">
+          <i class="bi bi-image"></i>
+          <span>Banner não definido</span>
+        </div>
+      `
+    }
+  }
+
+  // Atualiza resumo da agenda
+updateAgendaSummary() {
+  const activities = this.getActivities()
+  
+  // Atualiza contador de sessões
+  this.summarySessionsCountTarget.textContent = `${activities.length} sess${activities.length !== 1 ? 'ões' : 'ão'}`
+  
+  const container = this.summaryAgendaTarget
+  
+  if (activities.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-3 text-muted">
+        <i class="bi bi-calendar-x"></i>
+        <p class="mb-0 mt-2">Nenhuma sessão configurada</p>
+      </div>
+    `
+  } else {
+    // Ordena por horário
+    const sortedActivities = activities.sort((a, b) => {
+      if (a.period_start && b.period_start) {
+        return new Date(a.period_start) - new Date(b.period_start)
+      }
+      return 0
+    })
+    
+    // Mostra apenas as primeiras 5 sessões
+    const displayActivities = sortedActivities.slice(0, 5)
+    
+    container.innerHTML = displayActivities.map(activity => `
+      <div class="session-summary">
+        <div class="session-time-summary">
+          ${this.formatTime(activity.period_start)}
+        </div>
+        <div class="session-info-summary">
+          <div class="session-title-summary">${activity.name || activity.title || 'Sessão sem título'}</div>
+          <div class="session-speaker-summary">
+            <i class="bi bi-person me-1"></i>
+            ${activity.speaker || 'Palestrante não definido'}
+          </div>
+        </div>
+      </div>
+    `).join('')
+    
+    // Se tem mais de 5, mostra indicador
+    if (activities.length > 5) {
+      container.innerHTML += `
+        <div class="text-center mt-2">
+          <small class="text-muted">+ ${activities.length - 5} sessão${activities.length - 5 !== 1 ? 'ões' : ''} adicional${activities.length - 5 !== 1 ? 'is' : ''}</small>
+        </div>
+      `
+    }
+  }
+}
+
+  // Atualiza resumo dos palestrantes
+  updateSpeakersSummary() {
+    const activities = this.getActivities()
+    
+    // Extrai palestrantes únicos (exceto intervalos)
+    const speakers = [...new Set(activities
+      .map(a => a.speaker)
+      .filter(s => s && !s.toLowerCase().includes('intervalo') && !s.toLowerCase().includes('coffee'))
+    )]
+    
+    // Atualiza contador
+    this.summarySpeakersCountTarget.textContent = `${speakers.length} palestrante${speakers.length !== 1 ? 's' : ''}`
+    
+    const container = this.summarySpeakersTarget
+    
+    if (speakers.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-3 text-muted">
+          <i class="bi bi-person-x"></i>
+          <p class="mb-0 mt-2">Nenhum palestrante definido</p>
+        </div>
+      `
+    } else {
+      // Mostra apenas os primeiros 6 palestrantes
+      const displaySpeakers = speakers.slice(0, 6)
+      
+      container.innerHTML = displaySpeakers.map(speaker => `
+        <div class="speaker-summary">
+          <div class="speaker-avatar-summary">
+            ${speaker.charAt(0).toUpperCase()}
+          </div>
+          <div class="speaker-name-summary">${speaker}</div>
+        </div>
+      `).join('')
+      
+      // Se tem mais de 6, mostra indicador
+      if (speakers.length > 6) {
+        container.innerHTML += `
+          <div class="text-center mt-2">
+            <small class="text-muted">+ ${speakers.length - 6} palestrante${speakers.length - 6 !== 1 ? 's' : ''} adicional${speakers.length - 6 !== 1 ? 'is' : ''}</small>
+          </div>
+        `
       }
     }
   }
+
+  // Atualiza status de completude do evento
+  updateCompletionStatus() {
+    const eventData = this.getEventData()
+    const activities = this.getActivities()
+    
+    let completedItems = 0
+    const totalItems = 3
+    
+    // Verifica informações básicas
+    const hasBasicInfo = eventData.name && eventData.email && eventData.responsable && eventData.local
+    if (hasBasicInfo) {
+      this.statusBasicTarget.classList.add('completed')
+      this.statusBasicTarget.querySelector('i').classList.remove('bi-circle')
+      this.statusBasicTarget.querySelector('i').classList.add('bi-check-circle-fill', 'text-success')
+      completedItems++
+    } else {
+      this.statusBasicTarget.classList.remove('completed')
+      this.statusBasicTarget.querySelector('i').classList.remove('bi-check-circle-fill', 'text-success')
+      this.statusBasicTarget.querySelector('i').classList.add('bi-circle', 'text-muted')
+    }
+    
+    // Verifica agenda
+    const hasAgenda = activities.length > 0
+    if (hasAgenda) {
+      this.statusAgendaTarget.classList.add('completed')
+      this.statusAgendaTarget.querySelector('i').classList.remove('bi-circle')
+      this.statusAgendaTarget.querySelector('i').classList.add('bi-check-circle-fill', 'text-success')
+      completedItems++
+    } else {
+      this.statusAgendaTarget.classList.remove('completed')
+      this.statusAgendaTarget.querySelector('i').classList.remove('bi-check-circle-fill', 'text-success')
+      this.statusAgendaTarget.querySelector('i').classList.add('bi-circle', 'text-muted')
+    }
+    
+    // Ingressos (sempre incompleto por enquanto)
+    this.statusTicketsTarget.classList.add('completed')
+    this.statusTicketsTarget.querySelector('i').classList.remove('bi-check-circle-fill', 'text-success')
+    this.statusTicketsTarget.querySelector('i').classList.add('bi-circle', 'text-muted')
+    completedItems++
+    // Atualiza barra de progresso
+    const percentage = Math.round((completedItems / totalItems) * 100)
+    this.completionProgressTarget.style.width = `${percentage}%`
+    this.completionPercentageTarget.textContent = `${percentage}%`
+    
+    // Muda cor da barra baseado no progresso
+    this.completionProgressTarget.className = 'progress-bar'
+    if (percentage >= 100) {
+      this.completionProgressTarget.classList.add('bg-success')
+    } else if (percentage >= 50) {
+      this.completionProgressTarget.classList.add('bg-warning')
+    } else {
+      this.completionProgressTarget.classList.add('bg-danger')
+    }
+  }
+
+  // Visualizar evento
+  previewEvent() {
+    alert('Funcionalidade de preview em desenvolvimento!')
+    // Aqui você pode abrir uma nova aba com o preview do evento
+  }
+
+  // Exportar evento
+  exportEvent() {
+    const eventData = this.getEventData()
+    const activities = this.getActivities()
+    
+    const exportData = {
+      event: eventData,
+      activities: activities,
+      exportedAt: new Date().toISOString()
+    }
+    
+    // Cria arquivo JSON para download
+    const dataStr = JSON.stringify(exportData, null, 2)
+    const dataBlob = new Blob([dataStr], {type: 'application/json'})
+    
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(dataBlob)
+    link.download = `evento_${eventData.name || 'sem_nome'}_${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+  }
+
+  // Salvar como rascunho
+  saveDraft() {
+    // Aqui você salvaria no backend como rascunho
+    alert('Rascunho salvo com sucesso!')
+    console.log('Salvando como rascunho...')
+  }
+
+  // Publicar evento
+  publishEvent() {
+    const eventData = this.getEventData()
+    const activities = this.getActivities()
+    
+    // Validações básicas
+    if (!eventData.name || !eventData.email || !eventData.responsable) {
+      alert('Preencha todas as informações básicas antes de publicar!')
+      return
+    }
+    
+    if (activities.length === 0) {
+      if (!confirm('Nenhuma sessão foi configurada. Deseja publicar mesmo assim?')) {
+        return
+      }
+    }
+    
+    // Aqui você enviaria os dados para o backend
+    console.log('Publicando evento:', { eventData, activities })
+    alert('Evento publicado com sucesso!')
+  }
+
+
+
+
+  // Método auxiliar para obter dados do evento
+  getEventData() {
+    try {
+      const eventDataString = sessionStorage.getItem('eventData')
+      if (!eventDataString) return {}
+      
+      const eventData = JSON.parse(eventDataString)
+      return eventData || {}
+    } catch (error) {
+      console.error('Erro ao obter dados do evento:', error)
+      return {}
+    }
+  }
+
 
   // Formata horário
   formatDate(dateString) {

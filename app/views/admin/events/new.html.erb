@@ -147,7 +147,7 @@
           <div class="row g-4">
             
             <!-- Coluna Principal - Constructor de Agenda -->
-            <div class="col-lg-8">
+            <div class="col-lg-8 col-md-8">
               <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -166,23 +166,6 @@
                   <div data-event-form-target="activitiesContainer" class="agenda-sessions">
                     <!-- JavaScript vai preencher aqui -->
                   </div>
-                  
-                  <!-- Configurações da Agenda -->
-                  <div class="row mt-4 pt-4 border-top">
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold">Data da agenda</label>
-                      <input type="date" class="form-control" data-event-form-target="agendaDate">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold">Fuso horário</label>
-                      <select class="form-control" data-event-form-target="timezone">
-                        <option value="BRT">BRT (UTC-3)</option>
-                        <option value="PDT">PDT (UTC-7)</option>
-                        <option value="GMT">GMT (UTC+0)</option>
-                        <option value="EST">EST (UTC-5)</option>
-                      </select>
-                    </div>
-                  </div>
                 </div>
                 
                 <div class="card-footer bg-light d-flex justify-content-between">
@@ -192,12 +175,12 @@
                     <i class="bi bi-arrow-left"></i> Voltar
                   </button>
                   <div class="d-flex gap-2">
-                    <button type="button" 
+                    <!-- <button type="button" 
                             class="btn btn-outline-primary"
                             data-action="event-form#saveChanges">
                       Salvar alterações
-                    </button>
-                    <button type="button" 
+                    </button> -->
+                    <!-- <button type="button" 
                             class="btn btn-outline-info"
                             data-action="event-form#previewAgenda">
                       <i class="bi bi-eye"></i> Visualizar
@@ -206,7 +189,7 @@
                             class="btn btn-outline-warning"
                             data-action="event-form#autoReorder">
                       <i class="bi bi-arrow-up-down"></i> Reordenar automaticamente
-                    </button>
+                    </button> -->
                     <button type="button" 
                             class="btn btn-primary"
                             data-action="event-form#saveAndNextTab">
@@ -218,7 +201,7 @@
             </div>
 
             <!-- Coluna Lateral - Preview e Palestrantes -->
-            <div class="col-lg-4">
+            <div class="col-lg-4 col-md-4">
               
               <!-- Preview da Agenda -->
               <div class="card border-0 shadow-sm mb-4">
@@ -230,15 +213,15 @@
                   <div class="preview-event-info">
                     <div class="d-flex align-items-center mb-2">
                       <i class="bi bi-calendar3 me-2 text-primary"></i>
-                      <span data-event-form-target="previewDate">21 set 2025</span>
+                      <span data-event-form-target="previewDate"></span>
                     </div>
                     <div class="d-flex align-items-center mb-2">
                       <i class="bi bi-clock me-2 text-primary"></i>
-                      <span data-event-form-target="previewTime">09:30 – 17:00</span>
+                      <span data-event-form-target="previewTime"></span>
                     </div>
                     <div class="d-flex align-items-center mb-2">
                       <i class="bi bi-geo-alt me-2 text-primary"></i>
-                      <span data-event-form-target="previewLocation">Local do evento</span>
+                      <span data-event-form-target="previewLocation"></span>
                     </div>
                     <div class="d-flex align-items-center">
                       <i class="bi bi-people me-2 text-primary"></i>
@@ -286,20 +269,187 @@
           <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
               <h4>Configuração de Ingressos</h4>
-              <p class="text-muted">Em desenvolvimento...</p>
+              <p class="text-muted">Nesse momento somente eventos gratuitos, aguardem por novidades!</p>
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-between">
+              <button type="button" 
+                          class="btn btn-outline-secondary"
+                          data-action="event-form#previousTab">
+                    <i class="bi bi-arrow-left"></i> Voltar
+              </button>
+              <button type="button"
+                            class="btn btn-primary"
+                            data-action="event-form#saveAndNextTab">
+                      Continuar para publicação <i class="bi bi-arrow-right"></i>
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- TAB 4: PUBLICAR -->
+       <!-- TAB 4: PUBLICAR -->
         <div data-event-form-target="tabContent" data-tab="publicar" class="tab-pane fade">
-          <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-              <h4>Publicar Evento</h4>
-              <p class="text-muted">Resumo final e publicação...</p>
+          <div class="row g-4">
+            
+            <!-- Coluna Principal - Resumo do Evento -->
+            <div class="col-lg-8">
+              <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <h4 class="mb-1">Resumo do evento</h4>
+                      <p class="text-muted mb-0">Revise todas as informações antes de publicar.</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Informações Básicas do Evento -->
+                  <div class="event-summary-section mb-4">
+                    <h5 class="section-title">
+                      <i class="bi bi-info-circle me-2"></i>Informações básicas
+                    </h5>
+                    <div class="summary-card">
+                      <div class="row g-3">
+                        <div class="col-md-8">
+                          <h3 class="event-title mb-4" data-event-form-target="summaryEventName">
+                            Nome do Evento
+                          </h3>
+                          <div class="event-meta">
+                            <div class="meta-item">
+                              <i class="bi bi-calendar3 me-2"></i>
+                              <span data-event-form-target="summaryEventDate">Data do evento</span>
+                            </div>
+                            <div class="meta-item">
+                              <i class="bi bi-geo-alt me-2"></i>
+                              <span data-event-form-target="summaryEventLocation">Local do evento</span>
+                            </div>
+                            <div class="meta-item">
+                              <i class="bi bi-person me-2"></i>
+                              <span data-event-form-target="summaryEventResponsible">Responsável</span>
+                            </div>
+                            <div class="meta-item">
+                              <i class="bi bi-envelope me-2"></i>
+                              <span data-event-form-target="summaryEventEmail">Email de contato</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                          <div class="event-banner-preview" data-event-form-target="summaryEventBanner">
+                            <div class="banner-placeholder">
+                              <i class="bi bi-image"></i>
+                              <span>Banner do evento</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Agenda do Evento -->
+                  <div class="event-summary-section mb-4">
+                    <h5 class="section-title">
+                      <i class="bi bi-calendar-event me-2"></i>Agenda
+                      <span class="badge bg-primary ms-2" data-event-form-target="summarySessionsCount">0 sessões</span>
+                    </h5>
+                    <div class="summary-card">
+                      <div data-event-form-target="summaryAgenda" class="agenda-summary">
+                        <!-- JavaScript vai preencher aqui -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Palestrantes -->
+                  <div class="event-summary-section mb-4">
+                    <h5 class="section-title">
+                      <i class="bi bi-people me-2"></i>Palestrantes
+                      <span class="badge bg-secondary ms-2" data-event-form-target="summarySpeakersCount">0 palestrantes</span>
+                    </h5>
+                    <div class="summary-card">
+                      <div data-event-form-target="summarySpeakers" class="speakers-summary">
+                        <!-- JavaScript vai preencher aqui -->
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+                
+                <div class="card-footer bg-light d-flex justify-content-between">
+                  <button type="button" 
+                          class="btn btn-outline-secondary"
+                          data-action="event-form#previousTab">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                  </button>
+                  <div class="d-flex gap-2">
+                    <button type="button" 
+                            class="btn btn-outline-warning"
+                            data-action="event-form#saveDraft">
+                      <i class="bi bi-file-earmark"></i> Salvar como rascunho
+                    </button>
+                    <button type="button" 
+                            class="btn btn-success btn-lg"
+                            data-action="event-form#publishEvent">
+                      <i class="bi bi-rocket"></i> Publicar evento
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- Coluna Lateral - Status e Dicas -->
+            <div class="col-lg-4">
+              
+              <!-- Status do Evento -->
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                  <h5 class="card-title mb-3">
+                    <i class="bi bi-check-circle me-2"></i>Status de completude
+                  </h5>
+                  
+                  <div class="completion-list">
+                    <div class="completion-item" data-event-form-target="statusBasic">
+                      <i class="bi bi-circle text-muted"></i>
+                      <span>Informações básicas</span>
+                    </div>
+                    <div class="completion-item" data-event-form-target="statusAgenda">
+                      <i class="bi bi-circle text-muted"></i>
+                      <span>Agenda configurada</span>
+                    </div>
+                    <div class="completion-item" data-event-form-target="statusTickets">
+                      <i class="bi bi-circle text-muted"></i>
+                      <span>Ingressos configurados</span>
+                    </div>
+                  </div>
+                  
+                  <div class="progress mt-3">
+                    <div class="progress-bar" 
+                        role="progressbar" 
+                        style="width: 0%" 
+                        data-event-form-target="completionProgress">
+                    </div>
+                  </div>
+                  <small class="text-muted">
+                    <span data-event-form-target="completionPercentage">0%</span> completo
+                  </small>
+                </div>
+              </div>
+
+              <!-- Dicas -->
+              <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-4">
+                  <h6 class="card-title text-primary mb-2">
+                    <i class="bi bi-lightbulb me-2"></i>Dicas para publicação
+                  </h6>
+                  <ul class="tips-list">
+                    <li>Revise todas as informações antes de publicar</li>
+                    <li>Certifique-se de que a agenda está completa</li>
+                    <li>Verifique os dados de contato</li>
+                    <li>Teste o link de inscrição</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
+
 
       </div>
     </div>
@@ -307,60 +457,74 @@
 
   <!-- Modal para Adicionar Atividade -->
   <div data-event-form-target="activitiesModal" class="modal hidden">
-    <!-- Seu modal atual aqui -->
-     <div class="modal-content">
-      <button type="button" 
-              class="close"
-              data-action="event-form#closeModal">&times;</button>
-      <h2>Adicionar Nova Atividade </h2>
-      <form class="mb-0" autocomplete="off">
-        <div class="row">
-          <div class="col-12 col-md-6">
-            <label>Nome da Atividade</label>
-            <input type="text" class="form-control" data-event-form-target="activityName" required>
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Título</label>
-            <input type="text" class="form-control" data-event-form-target="activityTitle" required>
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Local</label>
-            <input type="text" class="form-control" data-event-form-target="activityLocal">
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Palestrante</label>
-            <input type="text" class="form-control" data-event-form-target="activitySpeaker">
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Início</label>
-            <input type="datetime-local" class="form-control" data-event-form-target="activityPeriodStart">
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Fim</label>
-            <input type="datetime-local" class="form-control" data-event-form-target="activityPeriodEnd">
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Carga horária do certificado</label>
-            <input type="number" min="0" step="0.1" class="form-control" data-event-form-target="activityCertificateHours">
-          </div>
-          <div class="col-12 col-md-6">
-            <label>Inscrições abertas?</label>
-            <select class="form-control" data-event-form-target="activitySubscriptionsOpen">
-              <option value="">Selecione...</option>
-              <option value="true">Sim</option>
-              <option value="false">Não</option>
-            </select>
+    <div class="modal-content">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>Adicionar Nova Atividade </h2>
+                <button type="button" 
+                    class="close btn btn-outline-secondary btn-sm"
+                    data-action="event-form#closeModal">&times;
+                </button>
+            </div>
+            <form class="mb-0" autocomplete="off">
+                <div class="card-body">
+                    <div class="alert alert-info">
+                      <i class="bi bi-info-circle me-2"></i>
+                      Preencha os detalhes da atividade abaixo e clique em "Salvar Atividade".
+                    </div>
+                    <div class="row">
+                    <div class="col-12 col-md-6">
+                      <label>Nome da Atividade</label>
+                      <input type="text" class="form-control" data-event-form-target="activityName" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Título</label>
+                      <input type="text" class="form-control" data-event-form-target="activityTitle" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Local</label>
+                      <input type="text" class="form-control" data-event-form-target="activityLocal">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Palestrante</label>
+                      <input type="text" class="form-control" data-event-form-target="activitySpeaker">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Início</label>
+                      <input type="datetime-local" class="form-control" data-event-form-target="activityPeriodStart">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Fim</label>
+                      <input type="datetime-local" class="form-control" data-event-form-target="activityPeriodEnd">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Carga horária do certificado</label>
+                      <input type="number" min="0" step="0.1" class="form-control" data-event-form-target="activityCertificateHours">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label>Inscrições abertas?</label>
+                      <select class="form-control" data-event-form-target="activitySubscriptionsOpen">
+                        <option value="">Selecione...</option>
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between gap-2">
+                  <button class="btn btn-secondary" type="button" data-action="event-form#closeModal">
+                    Cancelar
+                  </button>
+                  <button class="btn btn-primary" type="submit" data-event-form-target="addActivityButton" data-action="event-form#addActivity">
+                    Salvar Atividade
+                  </button>
+                </div>
+            </form>
           </div>
         </div>
-        <div class="text-end mt-3">
-          <button class="btn btn-primary" type="submit" data-event-form-target="addActivityButton" data-action="event-form#addActivity">
-            Adicionar Atividade
-          </button>
-          <button class="btn btn-primary hidden" type="submit" data-event-form-target="updateActivityButton" data-action="event-form#updateActivity">
-            Editar Atividade
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
