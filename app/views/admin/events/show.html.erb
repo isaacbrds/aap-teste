@@ -6,6 +6,11 @@
       <div class="card-body">
         <h3><%= @event.name %></h3>
         <span class="badge text-bg-secondary"><%= I18n.t("activerecord.attributes.event.statuses.#{@event.status}")%></span>
+        <% if @event.banner.attached? %>
+          <div class="my-3 text-center">
+            <%= image_tag @event.banner %>
+          </div>
+        <% end %>
       </div>
       <div class="card-footer">
         <%= @event.txtEnter %>

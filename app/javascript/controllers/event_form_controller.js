@@ -54,6 +54,8 @@ export default class extends Controller {
   connect() {
     console.log("Event Form Controller conectado")
     this.editingIndex = null
+    this.originalBannerFile = null 
+
     this.currentTab = "basico"
     this.loadEventDataIfExists()
     this.renderActivitiesList()
@@ -136,11 +138,19 @@ export default class extends Controller {
     const bannerInput = form.querySelector('input[name="event[banner]"]')
     if (bannerInput && bannerInput.files.length > 0) {
       const file = bannerInput.files[0]
+      this.originalBannerFile = file
+      
       const imageUrl = URL.createObjectURL(file)
       
       eventData.bannerUrl = imageUrl
       eventData.bannerName = file.name
       eventData.bannerSize = file.size
+      eventData.hasBanner = true
+
+      console.log('Banner guardado na propriedade do controller:', file.name)
+    }else {
+      eventData.hasBanner = false
+      this.originalBannerFile = null
     }
 
     sessionStorage.setItem('eventData', JSON.stringify(eventData))
@@ -630,30 +640,271 @@ updateAgendaSummary() {
 
   // Publicar evento
   publishEvent() {
+    console.log('Iniciando criação do evento...')
+  
     const eventData = this.getEventData()
     const activities = this.getActivities()
     
     // Validações básicas
-    if (!eventData.name || !eventData.email || !eventData.responsable) {
-      alert('Preencha todas as informações básicas antes de publicar!')
+    if (!this.validateEventData(eventData)) {
       return
     }
     
-    if (activities.length === 0) {
-      if (!confirm('Nenhuma sessão foi configurada. Deseja publicar mesmo assim?')) {
-        return
+    // Mostra loading
+    this.showLoadingState()
+    
+    // Prepara os dados para envio
+    const payload = this.prepareEventPayload(eventData, activities)
+    
+    // Envia para o backend
+    this.submitEventToBackend(payload)
+  }
+
+  cleanEventData(eventData) {
+    // Remove campos que são só para o frontend
+    const frontendOnlyFields = [
+      'authenticity_token', 'bannerUrl', 'bannerName', 'bannerSize', 'bannerType', 'bannerBase64'
+    ]
+    
+    const cleanData = { ...eventData }
+    frontendOnlyFields.forEach(field => {
+      delete cleanData[field]
+    })
+    
+    return cleanData
+  }
+// Valida os dados antes de enviar
+  validateEventData(eventData) {
+    const requiredFields = ['name', 'email', 'responsable', 'local']
+    const missingFields = requiredFields.filter(field => !eventData[field])
+    
+    if (missingFields.length > 0) {
+      alert(`Preencha os campos obrigatórios: ${missingFields.join(', ')}`)
+      return false
+    }
+    
+    if (!eventData.period_start) {
+      alert('Defina a data de início do evento!')
+      return false
+    }
+    
+    return true
+  }
+
+  async submitEventToBackend(payload){
+    try {
+      console.log('Enviando payload CORRETO:', payload)
+      
+      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      const formData = new FormData()
+      
+      // Adiciona dados básicos do evento
+      const eventFields = ['name', 'email', 'responsable', 'local', 'period_start', 'period_end',
+                          'comission', 'txtEnter', 'txtAbout', 'primaryColor', 'secondaryColor', 'status']
+      
+      eventFields.forEach(key => {
+        if (payload.event[key] !== undefined && payload.event[key] !== null && payload.event[key] !== '') {
+          formData.append(`event[${key}]`, payload.event[key])
+          console.log(`Adicionando event[${key}]:`, payload.event[key])
+        }
+      })
+      
+      // Adiciona atividades no formato CORRETO
+      if (payload.event.activities_attributes && payload.event.activities_attributes.length > 0) {
+        payload.event.activities_attributes.forEach((activity, index) => {
+          Object.keys(activity).forEach(key => {
+            const value = activity[key]
+            if (value !== null && value !== undefined && value !== '') {
+              formData.append(`event[activities_attributes][${index}][${key}]`, value)
+              console.log(`Adicionando event[activities_attributes][${index}][${key}]:`, value)
+            }
+          })
+        })
+      }
+      
+      // Adiciona o arquivo de banner se existir
+      const bannerFile = this.getBannerFile()
+      if (bannerFile) {
+        formData.append('event[banner]', bannerFile)
+        console.log('Arquivo de banner adicionado:', bannerFile.name)
+      }
+      
+      // Debug final do FormData
+      console.log('=== FORMDATA FINAL ===')
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value)
+      }
+      console.log('=== FIM FORMDATA ===')
+      
+      const response = await fetch('/admin/events', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': token,
+          'Accept': 'application/json'
+        },
+        body: formData
+      })
+      
+      let result
+      try {
+        result = await response.json()
+      } catch (parseError) {
+        console.error('Erro ao parsear resposta JSON:', parseError)
+        result = { errors: ['Erro de comunicação com o servidor'] }
+      }
+      
+      console.log('Resposta do servidor:', result)
+      
+      if (response.ok) {
+        this.handleSuccessResponse(result)
+      } else {
+        this.handleErrorResponse(result, response)
+      }
+      
+    } catch (error) {
+      console.error('Erro ao criar evento:', error)
+      this.hideLoadingState()
+      alert('Erro inesperado. Tente novamente.')
+    }
+  }
+
+  prepareEventPayload(eventData, activities) {
+  // Lista de campos válidos para o evento
+    const validEventFields = [
+      'name', 'email', 'responsable', 'local', 'period_start', 'period_end',
+      'comission', 'txtEnter', 'txtAbout', 'primaryColor', 'secondaryColor', 'status'
+    ]
+    
+    // Filtra apenas os campos válidos do evento
+    const event = {}
+    validEventFields.forEach(field => {
+      if (eventData[field] !== undefined && eventData[field] !== null && eventData[field] !== '') {
+        event[field] = eventData[field]
+      }
+    })
+    
+    // Adiciona status se não existir
+    if (!event.status) {
+      event.status = this.hasEventStatusTarget ? this.eventStatusTarget.value : 'draft'
+    }
+    
+    // Lista de campos válidos para atividades
+    const validActivityFields = [
+      'name', 'title', 'local', 'speaker', 'period_start', 'period_end',
+      'certificate_hours', 'subscriptions_open'
+    ]
+    
+    // Filtra apenas os campos válidos das atividades
+    const event_activities_attributes = activities.map(activity => {
+      const cleanActivity = {}
+      validActivityFields.forEach(field => {
+        if (activity[field] !== undefined && activity[field] !== null && activity[field] !== '') {
+          // Converte subscriptions_open para boolean
+          if (field === 'subscriptions_open') {
+            cleanActivity[field] = activity[field] === 'true' || activity[field] === true
+          } else {
+            cleanActivity[field] = activity[field]
+          }
+        }
+      })
+      return cleanActivity
+    })
+    
+    // IMPORTANTE: As atividades devem estar DENTRO do evento
+    event.activities_attributes = event_activities_attributes
+    
+    console.log('Payload CORRETO preparado:', { event })
+    
+    return { event: event } // Retorna apenas o evento com as atividades dentro
+  }
+
+    // Trata resposta de sucesso
+  handleSuccessResponse(result) {
+    console.log('Evento criado com sucesso:', result)
+    
+    this.hideLoadingState()
+    
+    // Limpa o sessionStorage
+    sessionStorage.removeItem('eventData')
+    sessionStorage.removeItem('activities')
+    
+    // Mostra mensagem de sucesso
+    this.showSuccessMessage(result)
+    
+    // Redireciona após alguns segundos
+    setTimeout(() => {
+      window.location.href = `/admin/events/${result.event.id}`
+    }, 2000)
+  }
+
+  // Trata resposta de erro
+  handleErrorResponse(result) {
+    console.error('Erro ao criar evento:', result)
+    
+    this.hideLoadingState()
+    
+    let errorMessage = 'Erro ao criar evento. Verifique os dados e tente novamente.'
+    
+    if (result.errors) {
+      if (Array.isArray(result.errors)) {
+        errorMessage = result.errors.join('\n')
+      } else if (typeof result.errors === 'object') {
+        const errors = Object.entries(result.errors)
+          .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+          .join('\n')
+        errorMessage = errors
       }
     }
     
-    // Aqui você enviaria os dados para o backend
-    console.log('Publicando evento:', { eventData, activities })
-    alert('Evento publicado com sucesso!')
+    alert(errorMessage)
   }
 
+  // Mostra estado de loading
+  showLoadingState() {
+    const publishButton = document.querySelector('[data-action="event-form#publishEvent"]')
+    if (publishButton) {
+      publishButton.disabled = true
+      publishButton.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Criando evento...
+      `
+    }
+  }
 
+  // Esconde estado de loading
+  hideLoadingState() {
+    const publishButton = document.querySelector('[data-action="event-form#publishEvent"]')
+    if (publishButton) {
+      publishButton.disabled = false
+      publishButton.innerHTML = `
+        <i class="bi bi-rocket"></i> Publicar evento
+      `
+    }
+  }
 
+  // Mostra mensagem de sucesso
+  showSuccessMessage(result) {
+    // Cria um toast/modal de sucesso
+    const successHtml = `
+      <div class="alert alert-success alert-dismissible fade show position-fixed" 
+          style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" 
+          role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        <strong>Sucesso!</strong> Evento "${result.event.name}" criado com sucesso!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `
+    
+    document.body.insertAdjacentHTML('beforeend', successHtml)
+    
+    // Remove automaticamente após 5 segundos
+    setTimeout(() => {
+      const alert = document.querySelector('.alert-success')
+      if (alert) alert.remove()
+    }, 5000)
+  }
 
-  // Método auxiliar para obter dados do evento
+// Método auxiliar para obter dados do evento
   getEventData() {
     try {
       const eventDataString = sessionStorage.getItem('eventData')
@@ -816,6 +1067,21 @@ updateAgendaSummary() {
       console.error('Erro ao salvar atividades:', error)
       return false
     }
+  }
+
+  // Recupera o arquivo de banner original do formulário
+  getBannerFile() {
+    // Primeiro tenta pegar o arquivo guardado na propriedade
+    if (this.originalBannerFile) {
+      console.log('Arquivo de banner encontrado na propriedade:', this.originalBannerFile.name)
+      return this.originalBannerFile
+    }
+    
+    // Se não tem na propriedade, tenta pegar do formulário
+    
+    console.log('nenhum arquivo de banner encontrado')
+    return null
+    
   }
 
   // Método para debugar o estado do sessionStorage

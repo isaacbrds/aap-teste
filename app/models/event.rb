@@ -3,6 +3,7 @@ class Event < ApplicationRecord
   has_many :registrations
   has_many :users, through: :registrations
   has_many :activities, dependent: :destroy
+  accepts_nested_attributes_for :activities, allow_destroy: true
   has_one_attached :banner
   has_many :certificates, dependent: :destroy
   has_rich_text :txtEnter

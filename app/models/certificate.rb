@@ -13,10 +13,10 @@ class Certificate < ApplicationRecord
                       .sum("activities.certificate_hours")
   end
 
-  def attended_activities
-            .where(activity_registrations: { user_id: self.user_id, status: 'confirmed' })
-            .where(activities: { event_id: self.event_id })
-  end
+  # def attended_activities
+  #           .where(activity_registrations: { user_id: self.user_id, status: 'confirmed' })
+  #           .where(activities: { event_id: self.event_id })
+  # end
 
   private
 
