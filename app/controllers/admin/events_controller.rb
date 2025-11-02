@@ -23,13 +23,25 @@ module Admin
     def create
       @event = current_user.owned_events.build event_params
       authorize @event
-      if @event.save
-        current_user.role = :manager unless current_user.admin?
-        flash[:notice] = "Evento salvo com sucesso"
-        redirect_to admin_events_path
-      else
-        flash[:alert] = "Erro ao criar o evento"
-        render :new, status: :unprocessable_entity
+      respond_to do |format|
+        if @event.save
+          current_user.role = :manager unless current_user.admin?
+          format.json { 
+            render json: { 
+              event: @event.as_json(include: :activities),
+              message: 'Evento criado com sucesso!' 
+            }, status: :created 
+          }
+          format.html { redirect_to admin_event_path(@event), notice: 'Evento criado com sucesso!' }
+        else
+          format.json { 
+            render json: { 
+              errors: @event.errors.full_messages,
+              details: @event.errors.as_json 
+            }, status: :unprocessable_entity 
+          }
+          format.html { render :new, status: :unprocessable_entity }
+        end
       end
     end
 
@@ -67,7 +79,8 @@ module Admin
     private
 
     def event_params
-      params.require(:event).permit(*PERMITED_PARAMS)
+      params.require(:event).permit(*PERMITED_PARAMS, activities_attributes: [ :name, :title, :local, :speaker, :period_start, :period_end,
+        :certificate_hours, :subscriptions_open ])
     end
 
     def load_event
