@@ -6,4 +6,5 @@ import * as bootstrap from "bootstrap"
 //import { Turbo } from "@hotwired/turbo-rails"
 //Turbo.session.drive = false
 import "trix"
+import "trix/dist/trix.css"
 import "@rails/actiontext"

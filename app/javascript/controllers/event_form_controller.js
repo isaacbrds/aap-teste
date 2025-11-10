@@ -1,1106 +1,774 @@
 // controllers/event_form_controller.js
 import { Controller } from "@hotwired/stimulus"
+import { Utils } from "../utils/utils"
+import { TabNavigationManager } from "../managers/tab_navigation_manager"
+import { EventDataManager } from "../managers/event_data_manager"
+import { ActivitiesManager } from "../managers/activities_manager"
+import { SummaryGenerator } from "../managers/summary_generator"
+import { BackendCommunicator } from "../managers/backend_communicator"
+
+
+const KEY_EVENT_DATA = "eventData"
+const KEY_ACTIVITIES = "event_activities"
 
 export default class extends Controller {
   static targets = [
     // Tabs
-    "tabButton",
-    "tabContent",
-    
+    "tabButton", "tabContent",
+
     // Formulário e dados
-    "eventForm",
-    "activitiesContainer",
-    "activitiesModal",
-    
+    "eventForm", "activitiesContainer", "activitiesModal",
+
     // Campos do modal de atividades
-    "activityName",
-    "activityTitle",
-    "activityLocal",
-    "activitySpeaker",
-    "activityPeriodStart",
-    "activityPeriodEnd",
-    "activityCertificateHours",
-    "activitySubscriptionsOpen",
-    
+    "activityName", "activityTitle", "activityLocal", "activitySpeaker",
+    "activityPeriodStart", "activityPeriodEnd", "activityCertificateHours", "activitySubscriptionsOpen",
+
     // Configurações da agenda
-    "agendaDate",
-    "timezone",
-    "speakersList",
-    
+    "agendaDate", "timezone", "speakersList",
+
     // Preview
-    "previewLocation",
-    "previewTime",
-    "previewDate",
-    
-    // Resumo do evento
-    "summaryEventName",
-    "summaryEventDate", 
-    "summaryEventLocation",
-    "summaryEventResponsible",
-    "summaryEventEmail",
-    "summaryEventBanner",
-    "summarySessionsCount",
-    "summaryAgenda",
-    "summarySpeakersCount",
-    "summarySpeakers",
-    "statusBasic",
-    "statusAgenda", 
-    "statusTickets",
-    "completionProgress",
-    "completionPercentage",
-    "eventStatus"
+    "previewLocation", "previewTime", "previewDate",
+
+    // Resumo do evento (publicar)
+    "summaryEventName", "summaryEventDate", "summaryEventLocation", "summaryEventResponsible",
+    "summaryEventEmail", "summaryEventBanner", "summarySessionsCount", "summaryAgenda",
+    "summarySpeakersCount", "summarySpeakers", "statusBasic", "statusAgenda", "statusTickets",
+    "completionProgress", "completionPercentage", "eventStatus"
   ]
 
   connect() {
-    console.log("Event Form Controller conectado")
+    console.log("Event Form Controller conectado - Versão Completa")
+
+    // Estado interno
     this.editingIndex = null
-    this.originalBannerFile = null 
-
+    this.originalBannerFile = null
     this.currentTab = "basico"
+    this._lastBannerObjectUrl = null
+
+    // Cria handlers vinculados (evita reatribuição em cada renderização)
+    this._boundEditHandler = (e) => this._editActivity(e)
+    this._boundRemoveHandler = (e) => this._removeActivity(e)
+
+    // Inicializa managers
+    this.initializeManagers()
+
+    // Carrega dados persistidos (se houver)
     this.loadEventDataIfExists()
-    this.renderActivitiesList()
-  }
 
-  // ===== GERENCIAMENTO DE TABS =====
-  
-  switchTab(event) {
-    const targetTab = event.currentTarget.dataset.tab
-    this.showTab(targetTab)
-  }
-
-  showTab(tabName) {
-    console.log(`Mudando para tab: ${tabName}`)
-    
-    // Atualiza botões das tabs
-    this.tabButtonTargets.forEach(button => {
-      const isActive = button.dataset.tab === tabName
-      button.classList.toggle("active", isActive)
-    })
-    
-    // Atualiza conteúdo das tabs
-    this.tabContentTargets.forEach(content => {
-      const isActive = content.dataset.tab === tabName
-      content.classList.toggle("show", isActive)
-      content.classList.toggle("active", isActive)
-    })
-    
-    this.currentTab = tabName
-    
-    // Ações específicas por tab
-    if (tabName === "agenda") {
+    // Renderiza atividades caso exista container
+    try {
       this.renderActivitiesList()
+    } catch (err) {
+      console.warn("renderActivitiesList ainda não implementado ou falhou:", err)
     }
+  }
 
-    if (tabName === 'publicar') {
-      this.updateEventSummary()
+  disconnect() {
+    // Limpa object URLs ao desconectar (boa prática)
+    if (this._lastBannerObjectUrl) {
+      URL.revokeObjectURL(this._lastBannerObjectUrl)
+      this._lastBannerObjectUrl = null
     }
+  }
+
+  // ===== INICIALIZAÇÃO DOS MANAGERS =====
+  initializeManagers() {
+    console.log("Inicializando managers...")
+
+    // ✅ Fase 1 - Utils (ATIVO)
+    this.utils = new Utils()
+
+    // ✅ Fase 2 - TabNavigationManager (ATIVO)
+    this.tabManager = new TabNavigationManager(this)
+
+     // ✅ Fase 3 - EventDataManager (ATIVO)
+    this.eventManager = new EventDataManager(this)
+
+    // ✅ Fase 4 - ActivitiesManager (ATIVO)
+    this.activitiesManager = new ActivitiesManager(this)
+
+    // ✅ Fase 5 - SummaryGenerator (ATIVO)
+    this.summaryGenerator = new SummaryGenerator(this)
+    
+    // ✅ Fase 6 - BackendCommunicator (ATIVO)
+    this.backendCommunicator = new BackendCommunicator(this)
+
+    console.log("🎉 Todos os managers inicializados com sucesso!")
+  }
+
+  // ===== API pública (delegates) =====
+  switchTab(event) {
+    return this.tabManager.switchTab(event)
   }
 
   saveAndNextTab() {
-    if (this.currentTab === "basico") {
-      this.saveEventData()
-      this.showTab("agenda")
-    } else if (this.currentTab === "agenda") {
-      this.showTab("ingressos")
-    } else if (this.currentTab === "ingressos") {
-      this.showTab("publicar")
-    }
+    this.tabManager.saveAndNextTab()
   }
 
   previousTab() {
-    if (this.currentTab === "agenda") {
-      this.showTab("basico")
-    } else if (this.currentTab === "ingressos") {
-      this.showTab("agenda")
-    } else if (this.currentTab === "publicar") {
-      this.showTab("ingressos")
-    }
+    this.tabManager.previousTab()
   }
-
-  // ===== GERENCIAMENTO DE DADOS DO EVENTO =====
-  
-  saveEventData() {
-    const form = document.querySelector('form')
-    if (!form) return
-    
-    const formData = new FormData(form)
-    const eventData = {}
-    
-    // Processa campos normais (exceto arquivos)
-    formData.forEach((value, key) => {
-      if (key !== 'event[banner]') {
-        const cleanKey = key.replace(/^event\[/, '').replace(/\]$/, '')
-        eventData[cleanKey] = value
-      }
-    })
-    
-    // Processa arquivo de banner
-    const bannerInput = form.querySelector('input[name="event[banner]"]')
-    if (bannerInput && bannerInput.files.length > 0) {
-      const file = bannerInput.files[0]
-      this.originalBannerFile = file
-      
-      const imageUrl = URL.createObjectURL(file)
-      
-      eventData.bannerUrl = imageUrl
-      eventData.bannerName = file.name
-      eventData.bannerSize = file.size
-      eventData.hasBanner = true
-
-      console.log('Banner guardado na propriedade do controller:', file.name)
-    }else {
-      eventData.hasBanner = false
-      this.originalBannerFile = null
-    }
-
-    sessionStorage.setItem('eventData', JSON.stringify(eventData))
-    console.log('Dados do evento salvos:', eventData)
-  }
-
-  loadEventDataIfExists() {
-    const eventData = sessionStorage.getItem('eventData')
-    if (!eventData) return
-    
-    const data = JSON.parse(eventData)
-    const form = document.querySelector('form')
-    if (!form) return
-    
-    // Preenche os campos do formulário
-    for (const [key, value] of Object.entries(data)) {
-      if (key.endsWith('Url') || key.endsWith('Name') || key.endsWith('Size')) continue
-      
-      const input = form.querySelector(`[name="event[${key}]"]`)
-      if (input) {
-        input.value = value
-      }
-    }
-    
-    
-    console.log('Dados do evento carregados')
-  }
-
-  // ===== GERENCIAMENTO DE ATIVIDADES =====
-  
+   // Modal de atividades
   openModal() {
-    this.activitiesModalTarget.classList.remove("hidden")
-    const modalTitle = this.activitiesModalTarget.querySelector('h2')
-    if (this.editingIndex !== null && this.editingIndex !== undefined) {
-      modalTitle.textContent = 'Editar Sessão'
-    } else {
-      modalTitle.textContent = 'Adicionar Nova Sessão'
-      this.clearModalFields()
-    }
-    
+    return this.activitiesManager.openModal()  // 👈 DELEGA
   }
 
   closeModal() {
-    this.activitiesModalTarget.classList.add("hidden")
-    this.clearModalFields()
-    this.editingIndex = null
+    return this.activitiesManager.closeModal()  // 👈 DELEGA
   }
 
-  clearModalFields() {
-    this.activityNameTarget.value = ''
-    this.activityTitleTarget.value = ''
-    this.activityLocalTarget.value = ''
-    this.activitySpeakerTarget.value = ''
-    this.activityPeriodStartTarget.value = ''
-    this.activityPeriodEndTarget.value = ''
-    this.activityCertificateHoursTarget.value = ''
-    this.activitySubscriptionsOpenTarget.value = ''
-  }
-
+  // CRUD de atividades
   addActivity(event) {
-    event.preventDefault()
-    
-    const name = this.activityNameTarget.value.trim()
-    const title = this.activityTitleTarget.value.trim()
-    const local = this.activityLocalTarget.value.trim()
-    const speaker = this.activitySpeakerTarget.value.trim()
-    const period_start = this.activityPeriodStartTarget.value
-    const period_end = this.activityPeriodEndTarget.value
-    const certificate_hours = this.activityCertificateHoursTarget.value
-    const subscriptions_open = this.activitySubscriptionsOpenTarget.value
-
-    if (!name || !title) {
-      alert('Preencha pelo menos Nome e Título da atividade!')
-      return
-    }
-
-    let activities = this.getActivities()
-    const activityData ={
-      name: name,
-      title: title,
-      local: local,
-      speaker: speaker,
-      period_start: period_start,
-      period_end: period_end,
-      certificate_hours: certificate_hours,
-      subscriptions_open: subscriptions_open
-    }
-
-    // Se está editando, substitui a atividade existente
-    if (this.editingIndex !== undefined && this.editingIndex !== null) {
-      console.log('Editando atividade no índice:', this.editingIndex)
-      activities[this.editingIndex] = activityData
-      this.editingIndex = null // Limpa o índice de edição
-    } else {
-      // Senão, adiciona nova atividade
-      console.log('Adicionando nova atividade')
-      activities.push(activityData)
-    }
-    
-    if (this.saveActivities(activities)) {
-      this.closeModal()
-      this.renderActivitiesList()
-      console.log('Atividade salva com sucesso')
-    } else {
-      alert('Erro ao salvar atividade!')
-    }
-  }
-  // Renderiza as sessões da agenda
-  renderActivitiesList() {
-    let activities = this.getActivities()
-    const container = this.activitiesContainerTarget
-    console.log('Renderizando', activities.length, 'atividades')
-    
-    container.innerHTML = ""
-    
-    if (activities.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-4">
-          <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
-          <p class="text-muted mt-2">Nenhuma sessão adicionada ainda.</p>
-          <button type="button" class="btn btn-outline-primary" data-action="event-form#openModal">
-            <i class="bi bi-plus-circle"></i> Adicionar primeira sessão
-          </button>
-        </div>
-      `
-    } else {
-      // Ordena por horário
-      activities.sort((a, b) => {
-        if (a.period_start && b.period_start) {
-          return new Date(a.period_start) - new Date(b.period_start)
-        }
-        return 0
-      })
-      
-      activities.forEach((activity, index) => {
-        const sessionItem = this.createSessionItem(activity, index)
-        container.appendChild(sessionItem)
-      })
-    }
-    
-    this.updateSpeakersList()
-    this.updatePreview()
-  }
-
-  // Cria um item de sessão
-  createSessionItem(activity, index) {
-    const div = document.createElement('div')
-    const isInterval = activity.speaker && activity.speaker.toLowerCase().includes('intervalo')
-    
-    div.className = `session-item ${isInterval ? 'interval' : ''}`
-    div.innerHTML = `
-      <div class="session-time">
-        ${this.formatTime(activity.period_start)}
-      </div>
-      <div class="session-content">
-        <div class="session-title">${activity.name || activity.title || 'Sessão sem título'}</div>
-        <div class="session-speaker">
-          <i class="bi bi-${isInterval ? 'cup-hot' : 'person'}"></i>
-          ${activity.speaker || 'Palestrante não definido'}
-        </div>
-      </div>
-      <div class="session-actions">
-        <button type="button" 
-                class="btn btn-outline-primary btn-sm" 
-                data-action="event-form#editActivity"
-                data-activity-index="${index}">
-          <i class="bi bi-pencil"></i>
-        </button>
-        <button type="button" 
-                class="btn btn-outline-danger btn-sm" 
-                data-action="event-form#removeActivity"
-                data-activity-index="${index}">
-          <i class="bi bi-trash"></i>
-        </button>
-      </div>
-    `
-    
-    return div
-  }
-
-  // Atualiza lista de palestrantes
-  updateSpeakersList() {
-    let activities = this.getActivities()
-    const container = this.speakersListTarget
-    
-    // Extrai palestrantes únicos
-    const speakers = [...new Set(activities
-      .map(a => a.speaker)
-      .filter(s => s && !s.toLowerCase().includes('intervalo'))
-    )]
-    
-    if (speakers.length === 0) {
-      container.innerHTML = '<p class="text-muted small">Nenhum palestrante definido</p>'
-    } else {
-      container.innerHTML = speakers.map(speaker => `
-        <div class="speaker-item">
-          <div class="speaker-avatar">
-            ${speaker.charAt(0).toUpperCase()}
-          </div>
-          <div class="speaker-info">
-            <div class="speaker-name">${speaker}</div>
-            <div class="speaker-sessions">
-              ${activities.filter(a => a.speaker === speaker).length} sessão(ões)
-            </div>
-          </div>
-        </div>
-      `).join('')
-    }
-  }
-
-  // Atualiza preview
-  updatePreview() {
-    const eventData = JSON.parse(sessionStorage.getItem('eventData')) || {}
-    const activities = JSON.parse(sessionStorage.getItem('activities')) || []
-    this.previewDateTarget.textContent = this.formatDate(eventData.period_start) || 'Data não definida'
-    // Atualiza informações do evento
-    this.previewLocationTarget.textContent = eventData.local || 'Local não definido'
-    
-    // Calcula horário das sessões
-    if (activities.length > 0) {
-      const times = activities
-        .filter(a => a.period_start)
-        .map(a => new Date(a.period_start))
-        .sort()
-      
-        if (times.length > 0) {
-          const startTime = this.formatTime(times[0])
-          const endTime = activities
-            .filter(a => a.period_end)
-            .map(a => new Date(a.period_end))
-            .sort()
-            .pop()
-          
-          this.previewTimeTarget.textContent = `${startTime} – ${endTime ? this.formatTime(endTime) : '17:00'}`
-        }
-      }
-    }
-  
-  updateEventSummary() {
-    console.log('Atualizando resumo do evento...')
-    
-    this.updateBasicInfo()
-    this.updateAgendaSummary() 
-    this.updateSpeakersSummary()
-    this.updateCompletionStatus()
-  }
-
-  // Atualiza informações básicas do evento
-  updateBasicInfo() {
-    const eventData = this.getEventData()
-
-    // Nome do evento
-    this.summaryEventNameTarget.textContent = eventData.name || 'Nome do evento não definido'
-    
-    // Data do evento
-    const startDate = eventData.period_start
-    const endDate = eventData.period_end
-    let dateText = 'Data não definida'
-    
-    if (startDate) {
-      const start = new Date(startDate)
-      if (endDate) {
-        const end = new Date(endDate)
-        if (start.toDateString() === end.toDateString()) {
-          // Mesmo dia
-          dateText = `${start.toLocaleDateString('pt-BR')} das ${start.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})} às ${end.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}`
-        } else {
-          // Dias diferentes
-          dateText = `${start.toLocaleDateString('pt-BR')} a ${end.toLocaleDateString('pt-BR')}`
-        }
-      } else {
-        dateText = start.toLocaleDateString('pt-BR')
-      }
-    }
-    this.summaryEventDateTarget.textContent = dateText
-    
-    // Outras informações
-    this.summaryEventLocationTarget.textContent = eventData.local || 'Local não definido'
-    this.summaryEventResponsibleTarget.textContent = eventData.responsable || 'Responsável não definido'
-    this.summaryEventEmailTarget.textContent = eventData.email || 'Email não definido'
-    
-    // Banner
-    if (eventData.bannerUrl) {
-      this.summaryEventBannerTarget.innerHTML = `
-        <img src="${eventData.bannerUrl}" 
-            alt="Banner do evento" 
-            style="width: 100%; height: 100%; object-fit: cover;">
-      `
-    } else {
-      this.summaryEventBannerTarget.innerHTML = `
-        <div class="banner-placeholder">
-          <i class="bi bi-image"></i>
-          <span>Banner não definido</span>
-        </div>
-      `
-    }
-  }
-
-  // Atualiza resumo da agenda
-updateAgendaSummary() {
-  const activities = this.getActivities()
-  
-  // Atualiza contador de sessões
-  this.summarySessionsCountTarget.textContent = `${activities.length} sess${activities.length !== 1 ? 'ões' : 'ão'}`
-  
-  const container = this.summaryAgendaTarget
-  
-  if (activities.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-3 text-muted">
-        <i class="bi bi-calendar-x"></i>
-        <p class="mb-0 mt-2">Nenhuma sessão configurada</p>
-      </div>
-    `
-  } else {
-    // Ordena por horário
-    const sortedActivities = activities.sort((a, b) => {
-      if (a.period_start && b.period_start) {
-        return new Date(a.period_start) - new Date(b.period_start)
-      }
-      return 0
-    })
-    
-    // Mostra apenas as primeiras 5 sessões
-    const displayActivities = sortedActivities.slice(0, 5)
-    
-    container.innerHTML = displayActivities.map(activity => `
-      <div class="session-summary">
-        <div class="session-time-summary">
-          ${this.formatTime(activity.period_start)}
-        </div>
-        <div class="session-info-summary">
-          <div class="session-title-summary">${activity.name || activity.title || 'Sessão sem título'}</div>
-          <div class="session-speaker-summary">
-            <i class="bi bi-person me-1"></i>
-            ${activity.speaker || 'Palestrante não definido'}
-          </div>
-        </div>
-      </div>
-    `).join('')
-    
-    // Se tem mais de 5, mostra indicador
-    if (activities.length > 5) {
-      container.innerHTML += `
-        <div class="text-center mt-2">
-          <small class="text-muted">+ ${activities.length - 5} sessão${activities.length - 5 !== 1 ? 'ões' : ''} adicional${activities.length - 5 !== 1 ? 'is' : ''}</small>
-        </div>
-      `
-    }
-  }
-}
-
-  // Atualiza resumo dos palestrantes
-  updateSpeakersSummary() {
-    const activities = this.getActivities()
-    
-    // Extrai palestrantes únicos (exceto intervalos)
-    const speakers = [...new Set(activities
-      .map(a => a.speaker)
-      .filter(s => s && !s.toLowerCase().includes('intervalo') && !s.toLowerCase().includes('coffee'))
-    )]
-    
-    // Atualiza contador
-    this.summarySpeakersCountTarget.textContent = `${speakers.length} palestrante${speakers.length !== 1 ? 's' : ''}`
-    
-    const container = this.summarySpeakersTarget
-    
-    if (speakers.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-3 text-muted">
-          <i class="bi bi-person-x"></i>
-          <p class="mb-0 mt-2">Nenhum palestrante definido</p>
-        </div>
-      `
-    } else {
-      // Mostra apenas os primeiros 6 palestrantes
-      const displaySpeakers = speakers.slice(0, 6)
-      
-      container.innerHTML = displaySpeakers.map(speaker => `
-        <div class="speaker-summary">
-          <div class="speaker-avatar-summary">
-            ${speaker.charAt(0).toUpperCase()}
-          </div>
-          <div class="speaker-name-summary">${speaker}</div>
-        </div>
-      `).join('')
-      
-      // Se tem mais de 6, mostra indicador
-      if (speakers.length > 6) {
-        container.innerHTML += `
-          <div class="text-center mt-2">
-            <small class="text-muted">+ ${speakers.length - 6} palestrante${speakers.length - 6 !== 1 ? 's' : ''} adicional${speakers.length - 6 !== 1 ? 'is' : ''}</small>
-          </div>
-        `
-      }
-    }
-  }
-
-  // Atualiza status de completude do evento
-  updateCompletionStatus() {
-    const eventData = this.getEventData()
-    const activities = this.getActivities()
-    
-    let completedItems = 0
-    const totalItems = 3
-    
-    // Verifica informações básicas
-    const hasBasicInfo = eventData.name && eventData.email && eventData.responsable && eventData.local
-    if (hasBasicInfo) {
-      this.statusBasicTarget.classList.add('completed')
-      this.statusBasicTarget.querySelector('i').classList.remove('bi-circle')
-      this.statusBasicTarget.querySelector('i').classList.add('bi-check-circle-fill', 'text-success')
-      completedItems++
-    } else {
-      this.statusBasicTarget.classList.remove('completed')
-      this.statusBasicTarget.querySelector('i').classList.remove('bi-check-circle-fill', 'text-success')
-      this.statusBasicTarget.querySelector('i').classList.add('bi-circle', 'text-muted')
-    }
-    
-    // Verifica agenda
-    const hasAgenda = activities.length > 0
-    if (hasAgenda) {
-      this.statusAgendaTarget.classList.add('completed')
-      this.statusAgendaTarget.querySelector('i').classList.remove('bi-circle')
-      this.statusAgendaTarget.querySelector('i').classList.add('bi-check-circle-fill', 'text-success')
-      completedItems++
-    } else {
-      this.statusAgendaTarget.classList.remove('completed')
-      this.statusAgendaTarget.querySelector('i').classList.remove('bi-check-circle-fill', 'text-success')
-      this.statusAgendaTarget.querySelector('i').classList.add('bi-circle', 'text-muted')
-    }
-    
-    // Ingressos (sempre incompleto por enquanto)
-    this.statusTicketsTarget.classList.add('completed')
-    this.statusTicketsTarget.querySelector('i').classList.remove('bi-check-circle-fill', 'text-success')
-    this.statusTicketsTarget.querySelector('i').classList.add('bi-circle', 'text-muted')
-    completedItems++
-    // Atualiza barra de progresso
-    const percentage = Math.round((completedItems / totalItems) * 100)
-    this.completionProgressTarget.style.width = `${percentage}%`
-    this.completionPercentageTarget.textContent = `${percentage}%`
-    
-    // Muda cor da barra baseado no progresso
-    this.completionProgressTarget.className = 'progress-bar'
-    if (percentage >= 100) {
-      this.completionProgressTarget.classList.add('bg-success')
-    } else if (percentage >= 50) {
-      this.completionProgressTarget.classList.add('bg-warning')
-    } else {
-      this.completionProgressTarget.classList.add('bg-danger')
-    }
-  }
-
-  // Visualizar evento
-  previewEvent() {
-    alert('Funcionalidade de preview em desenvolvimento!')
-    // Aqui você pode abrir uma nova aba com o preview do evento
-  }
-
-  // Exportar evento
-  exportEvent() {
-    const eventData = this.getEventData()
-    const activities = this.getActivities()
-    
-    const exportData = {
-      event: eventData,
-      activities: activities,
-      exportedAt: new Date().toISOString()
-    }
-    
-    // Cria arquivo JSON para download
-    const dataStr = JSON.stringify(exportData, null, 2)
-    const dataBlob = new Blob([dataStr], {type: 'application/json'})
-    
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(dataBlob)
-    link.download = `evento_${eventData.name || 'sem_nome'}_${new Date().toISOString().split('T')[0]}.json`
-    link.click()
-  }
-
-  // Salvar como rascunho
-  saveDraft() {
-    // Aqui você salvaria no backend como rascunho
-    alert('Rascunho salvo com sucesso!')
-    console.log('Salvando como rascunho...')
-  }
-
-  // Publicar evento
-  publishEvent() {
-    console.log('Iniciando criação do evento...')
-  
-    const eventData = this.getEventData()
-    const activities = this.getActivities()
-    
-    // Validações básicas
-    if (!this.validateEventData(eventData)) {
-      return
-    }
-    
-    // Mostra loading
-    this.showLoadingState()
-    
-    // Prepara os dados para envio
-    const payload = this.prepareEventPayload(eventData, activities)
-    
-    // Envia para o backend
-    this.submitEventToBackend(payload)
-  }
-
-  cleanEventData(eventData) {
-    // Remove campos que são só para o frontend
-    const frontendOnlyFields = [
-      'authenticity_token', 'bannerUrl', 'bannerName', 'bannerSize', 'bannerType', 'bannerBase64'
-    ]
-    
-    const cleanData = { ...eventData }
-    frontendOnlyFields.forEach(field => {
-      delete cleanData[field]
-    })
-    
-    return cleanData
-  }
-// Valida os dados antes de enviar
-  validateEventData(eventData) {
-    const requiredFields = ['name', 'email', 'responsable', 'local']
-    const missingFields = requiredFields.filter(field => !eventData[field])
-    
-    if (missingFields.length > 0) {
-      alert(`Preencha os campos obrigatórios: ${missingFields.join(', ')}`)
-      return false
-    }
-    
-    if (!eventData.period_start) {
-      alert('Defina a data de início do evento!')
-      return false
-    }
-    
-    return true
-  }
-
-  async submitEventToBackend(payload){
-    try {
-      console.log('Enviando payload CORRETO:', payload)
-      
-      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      const formData = new FormData()
-      
-      // Adiciona dados básicos do evento
-      const eventFields = ['name', 'email', 'responsable', 'local', 'period_start', 'period_end',
-                          'comission', 'txtEnter', 'txtAbout', 'primaryColor', 'secondaryColor', 'status']
-      
-      eventFields.forEach(key => {
-        if (payload.event[key] !== undefined && payload.event[key] !== null && payload.event[key] !== '') {
-          formData.append(`event[${key}]`, payload.event[key])
-          console.log(`Adicionando event[${key}]:`, payload.event[key])
-        }
-      })
-      
-      // Adiciona atividades no formato CORRETO
-      if (payload.event.activities_attributes && payload.event.activities_attributes.length > 0) {
-        payload.event.activities_attributes.forEach((activity, index) => {
-          Object.keys(activity).forEach(key => {
-            const value = activity[key]
-            if (value !== null && value !== undefined && value !== '') {
-              formData.append(`event[activities_attributes][${index}][${key}]`, value)
-              console.log(`Adicionando event[activities_attributes][${index}][${key}]:`, value)
-            }
-          })
-        })
-      }
-      
-      // Adiciona o arquivo de banner se existir
-      const bannerFile = this.getBannerFile()
-      if (bannerFile) {
-        formData.append('event[banner]', bannerFile)
-        console.log('Arquivo de banner adicionado:', bannerFile.name)
-      }
-      
-      // Debug final do FormData
-      console.log('=== FORMDATA FINAL ===')
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value)
-      }
-      console.log('=== FIM FORMDATA ===')
-      
-      const response = await fetch('/admin/events', {
-        method: 'POST',
-        headers: {
-          'X-CSRF-Token': token,
-          'Accept': 'application/json'
-        },
-        body: formData
-      })
-      
-      let result
-      try {
-        result = await response.json()
-      } catch (parseError) {
-        console.error('Erro ao parsear resposta JSON:', parseError)
-        result = { errors: ['Erro de comunicação com o servidor'] }
-      }
-      
-      console.log('Resposta do servidor:', result)
-      
-      if (response.ok) {
-        this.handleSuccessResponse(result)
-      } else {
-        this.handleErrorResponse(result, response)
-      }
-      
-    } catch (error) {
-      console.error('Erro ao criar evento:', error)
-      this.hideLoadingState()
-      alert('Erro inesperado. Tente novamente.')
-    }
-  }
-
-  prepareEventPayload(eventData, activities) {
-  // Lista de campos válidos para o evento
-    const validEventFields = [
-      'name', 'email', 'responsable', 'local', 'period_start', 'period_end',
-      'comission', 'txtEnter', 'txtAbout', 'primaryColor', 'secondaryColor', 'status'
-    ]
-    
-    // Filtra apenas os campos válidos do evento
-    const event = {}
-    validEventFields.forEach(field => {
-      if (eventData[field] !== undefined && eventData[field] !== null && eventData[field] !== '') {
-        event[field] = eventData[field]
-      }
-    })
-    
-    // Adiciona status se não existir
-    if (!event.status) {
-      event.status = this.hasEventStatusTarget ? this.eventStatusTarget.value : 'draft'
-    }
-    
-    // Lista de campos válidos para atividades
-    const validActivityFields = [
-      'name', 'title', 'local', 'speaker', 'period_start', 'period_end',
-      'certificate_hours', 'subscriptions_open'
-    ]
-    
-    // Filtra apenas os campos válidos das atividades
-    const event_activities_attributes = activities.map(activity => {
-      const cleanActivity = {}
-      validActivityFields.forEach(field => {
-        if (activity[field] !== undefined && activity[field] !== null && activity[field] !== '') {
-          // Converte subscriptions_open para boolean
-          if (field === 'subscriptions_open') {
-            cleanActivity[field] = activity[field] === 'true' || activity[field] === true
-          } else {
-            cleanActivity[field] = activity[field]
-          }
-        }
-      })
-      return cleanActivity
-    })
-    
-    // IMPORTANTE: As atividades devem estar DENTRO do evento
-    event.activities_attributes = event_activities_attributes
-    
-    console.log('Payload CORRETO preparado:', { event })
-    
-    return { event: event } // Retorna apenas o evento com as atividades dentro
-  }
-
-    // Trata resposta de sucesso
-  handleSuccessResponse(result) {
-    console.log('Evento criado com sucesso:', result)
-    
-    this.hideLoadingState()
-    
-    // Limpa o sessionStorage
-    sessionStorage.removeItem('eventData')
-    sessionStorage.removeItem('activities')
-    
-    // Mostra mensagem de sucesso
-    this.showSuccessMessage(result)
-    
-    // Redireciona após alguns segundos
-    setTimeout(() => {
-      window.location.href = `/admin/events/${result.event.id}`
-    }, 2000)
-  }
-
-  // Trata resposta de erro
-  handleErrorResponse(result) {
-    console.error('Erro ao criar evento:', result)
-    
-    this.hideLoadingState()
-    
-    let errorMessage = 'Erro ao criar evento. Verifique os dados e tente novamente.'
-    
-    if (result.errors) {
-      if (Array.isArray(result.errors)) {
-        errorMessage = result.errors.join('\n')
-      } else if (typeof result.errors === 'object') {
-        const errors = Object.entries(result.errors)
-          .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-          .join('\n')
-        errorMessage = errors
-      }
-    }
-    
-    alert(errorMessage)
-  }
-
-  // Mostra estado de loading
-  showLoadingState() {
-    const publishButton = document.querySelector('[data-action="event-form#publishEvent"]')
-    if (publishButton) {
-      publishButton.disabled = true
-      publishButton.innerHTML = `
-        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-        Criando evento...
-      `
-    }
-  }
-
-  // Esconde estado de loading
-  hideLoadingState() {
-    const publishButton = document.querySelector('[data-action="event-form#publishEvent"]')
-    if (publishButton) {
-      publishButton.disabled = false
-      publishButton.innerHTML = `
-        <i class="bi bi-rocket"></i> Publicar evento
-      `
-    }
-  }
-
-  // Mostra mensagem de sucesso
-  showSuccessMessage(result) {
-    // Cria um toast/modal de sucesso
-    const successHtml = `
-      <div class="alert alert-success alert-dismissible fade show position-fixed" 
-          style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" 
-          role="alert">
-        <i class="bi bi-check-circle me-2"></i>
-        <strong>Sucesso!</strong> Evento "${result.event.name}" criado com sucesso!
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    `
-    
-    document.body.insertAdjacentHTML('beforeend', successHtml)
-    
-    // Remove automaticamente após 5 segundos
-    setTimeout(() => {
-      const alert = document.querySelector('.alert-success')
-      if (alert) alert.remove()
-    }, 5000)
-  }
-
-// Método auxiliar para obter dados do evento
-  getEventData() {
-    try {
-      const eventDataString = sessionStorage.getItem('eventData')
-      if (!eventDataString) return {}
-      
-      const eventData = JSON.parse(eventDataString)
-      return eventData || {}
-    } catch (error) {
-      console.error('Erro ao obter dados do evento:', error)
-      return {}
-    }
-  }
-
-
-  // Formata horário
-  formatDate(dateString) {
-    if (!dateString) return '--/--/----'
-    const date = new Date(dateString)
-    return date.toLocaleDateString('pt-BR')
-  }
-  formatTime(dateString) {
-    if (!dateString) return '--:--'
-    const date = new Date(dateString)
-    return date.toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: false 
-    })
-  }
-
-
-  removeActivity(event) {
-    const index = parseInt(event.currentTarget.dataset.activityIndex)
-  
-    console.log('Removendo atividade no índice:', index)
-  
-    if (confirm('Tem certeza que deseja remover esta sessão?')) {
-      const activities = this.getActivities()
-      
-      if (activities[index]) {
-        console.log('Removendo atividade:', activities[index])
-        activities.splice(index, 1)
-        
-        if (this.saveActivities(activities)) {
-          this.renderActivitiesList()
-          console.log('Atividade removida com sucesso')
-        } else {
-          alert('Erro ao remover atividade!')
-        }
-      } else {
-        console.error('Atividade não encontrada no índice:', index)
-        alert('Erro: Atividade não encontrada!')
-      }
-    }
+    return this.activitiesManager.addActivity(event)  // 👈 DELEGA
   }
 
   editActivity(event) {
-
-    const index = parseInt(event.currentTarget.dataset.activityIndex)
-
-    console.log('Editar atividade:', index)
-    let activities = this.getActivities()
-    console.log('Total de atividades:', activities)
-
-
-    if (activities[index]) {
-      const activity = activities[index]
-      console.log('Dados da atividade:', activity)
-      // Preenche o modal com os dados da atividade
-      this.activityNameTarget.value = activity.name || ''
-      this.activityTitleTarget.value = activity.title || ''
-      this.activityLocalTarget.value = activity.local || ''
-      this.activitySpeakerTarget.value = activity.speaker || ''
-      this.activityPeriodStartTarget.value = activity.period_start || ''
-      this.activityPeriodEndTarget.value = activity.period_end || ''
-      this.activityCertificateHoursTarget.value = activity.certificate_hours || ''
-      this.activitySubscriptionsOpenTarget.value = activity.subscriptions_open || ''
-      
-      // Marca que está editando
-      this.editingIndex = index
-      console.log('Modo de edição ativado para índice:', this.editingIndex)
-      this.openModal()
-    }else {
-      console.error('Atividade não encontrada para o índice:', index)
-      alert('Erro: Atividade não encontrada.')
-    }
+    return this.activitiesManager.editActivity(event)  // 👈 DELEGA
   }
 
-  // ===== FUNCIONALIDADES EXTRAS =====
-  
-  previewAgenda() {
-    alert('Preview da agenda em desenvolvimento!')
+  removeActivity(event) {
+    return this.activitiesManager.removeActivity(event)  // 👈 DELEGA
   }
 
-  validateEventForm() {
-    const form = document.querySelector('form')
-    if (!form) return false
-    
-    const nameInput = form.querySelector('input[name*="[name]"]')
-    if (!nameInput || !nameInput.value.trim()) {
-      alert('Por favor, preencha o nome do evento')
-      return false
-    }
-    return true
+  // Renderização
+  renderActivitiesList() {
+    return this.activitiesManager.renderActivitiesList()  // 👈 DELEGA
   }
 
-  // Método auxiliar para formatar tamanho de arquivo
-  formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes'
-    
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  // Método auxiliar para obter atividades de forma segura
+  // Dados
   getActivities() {
-    try {
-      const activitiesString = sessionStorage.getItem('activities')
-      console.log('String do sessionStorage:', activitiesString)
-      
-      if (!activitiesString) {
-        console.log('Nenhuma atividade encontrada, retornando array vazio')
-        return []
-      }
-      
-      const activities = JSON.parse(activitiesString)
-      console.log('Atividades parseadas:', activities)
-      
-      // Garante que é um array
-      if (!Array.isArray(activities)) {
-        console.error('Dados não são um array, retornando array vazio')
-        return []
-      }
-      
-      return activities
-    } catch (error) {
-      console.error('Erro ao parsear atividades:', error)
-      console.log('Limpando sessionStorage e retornando array vazio')
-      sessionStorage.removeItem('activities')
-      return []
-    }
+    return this.activitiesManager.getActivities()  // 👈 DELEGA
   }
 
-  // Método auxiliar para salvar atividades de forma segura
   saveActivities(activities) {
-    try {
-      if (!Array.isArray(activities)) {
-        console.error('Tentando salvar dados que não são array:', activities)
-        return false
-      }
-      
-      const activitiesString = JSON.stringify(activities)
-      console.log('Salvando atividades:', activitiesString)
-      sessionStorage.setItem('activities', activitiesString)
-      return true
-    } catch (error) {
-      console.error('Erro ao salvar atividades:', error)
-      return false
+    return this.activitiesManager.saveActivities(activities)  // 👈 DELEGA
+  }
+
+
+  // openModal() {
+  //   this._openModal()
+  // }
+
+  // closeModal() {
+  //   this._closeModal()
+  // }
+
+  // addActivity(event) {
+  //   this._addActivity(event)
+  // }
+
+  // editActivity(event) {
+  //   this._editActivity(event)
+  // }
+
+  // removeActivity(event) {
+  //   this._removeActivity(event)
+  // }
+
+  publishEvent() {
+    return this.backendCommunicator.publishEvent()  // 👈 DELEGA
+  }
+
+  saveDraft() {
+    return this.backendCommunicator.saveDraft()  // 👈 DELEGA
+  }
+
+  previewEvent() {
+    return this.backendCommunicator.previewEvent()  // 👈 DELEGA
+  }
+
+  // exportEvent() {
+  //   this._exportEvent()
+  // }
+
+  // previewAgenda() {
+  //   this._previewAgenda()
+  // }
+
+   // SUBSTITUA ESTES MÉTODOS:
+  saveEventData() {
+    return this.eventManager.saveEventData()  // 👈 DELEGA
+  }
+
+  loadEventDataIfExists() {
+    return this.eventManager.loadEventData()  // 👈 DELEGA
+  }
+
+  getEventData() {
+    return this.eventManager.getEventData()  // 👈 DELEGA
+  }
+
+  validateEventData(eventData) {
+    return this.eventManager.validateEventData(eventData)  // 👈 DELEGA
+  }
+
+  exportEvent() {
+    return this.eventManager.exportEventData()  // 👈 DELEGA
+  }
+
+   updateEventSummary() {
+    return this.summaryGenerator.updateEventSummary()  // 👈 DELEGA
+  }
+
+  updateBasicInfo() {
+    return this.summaryGenerator.updateBasicInfo()  // 👈 DELEGA
+  }
+
+  updateAgendaSummary() {
+    return this.summaryGenerator.updateAgendaSummary()  // 👈 DELEGA
+  }
+
+  updateSpeakersSummary() {
+    return this.summaryGenerator.updateSpeakersSummary()  // 👈 DELEGA
+  }
+
+  updateCompletionStatus() {
+    return this.summaryGenerator.updateCompletionStatus()  // 👈 DELEGA
+  }
+
+  exportEvent() {
+    return this.summaryGenerator.exportEventSummary()  // 👈 DELEGA (substitui o antigo)
+  }
+
+  // // ===== NAVEGAÇÃO DE TABS =====
+  // _switchTab(event) {
+  //   const targetTab = event.currentTarget.dataset.tab
+  //   this._showTab(targetTab)
+  // }
+
+  // _showTab(tabName) {
+  //   console.log(`Mudando para tab: ${tabName}`)
+
+  //   // Atualiza botões das tabs
+  //   try {
+  //     ;(this.tabButtonTargets || []).forEach(button => {
+  //       const isActive = button.dataset.tab === tabName
+  //       button.classList.toggle("active", isActive)
+  //     })
+  //   } catch (err) {
+  //     console.error("Erro ao atualizar tabButtonTargets:", err)
+  //   }
+
+  //   // Atualiza conteúdos das tabs
+  //   try {
+  //     ;(this.tabContentTargets || []).forEach(content => {
+  //       const isActive = content.dataset.tab === tabName
+  //       content.classList.toggle("show", isActive)
+  //       content.classList.toggle("active", isActive)
+  //     })
+  //   } catch (err) {
+  //     console.error("Erro ao atualizar tabContentTargets:", err)
+  //   }
+
+  //   this.currentTab = tabName
+
+  //   if (tabName === "agenda") {
+  //     // Re-renderiza a lista de atividades ao abrir Agenda
+  //     if (typeof this.renderActivitiesList === "function") {
+  //       this.renderActivitiesList()
+  //     }
+  //   }
+
+  //   if (tabName === "publicar") {
+  //     // Atualiza resumo ao abrir Publicar
+  //     this.updateEventSummary()
+  //   }
+  // }
+
+  // _saveAndNextTab() {
+  //   if (this.currentTab === "basico") {
+  //     this.saveEventData()
+  //     this._showTab("agenda")
+  //   } else if (this.currentTab === "agenda") {
+  //     this._showTab("ingressos")
+  //   } else if (this.currentTab === "ingressos") {
+  //     this._showTab("publicar")
+  //   }
+  // }
+
+  // _previousTab() {
+  //   if (this.currentTab === "agenda") {
+  //     this._showTab("basico")
+  //   } else if (this.currentTab === "ingressos") {
+  //     this._showTab("agenda")
+  //   } else if (this.currentTab === "publicar") {
+  //     this._showTab("ingressos")
+  //   }
+  // }
+
+  // ===== SALVAMENTO E CARREGAMENTO DO FORMULÁRIO =====
+  // saveEventData() {
+  //   // Prefere target declarado; fallback com escopo do elemento
+  //   const form = (this.hasEventFormTarget && this.eventFormTarget)
+  //     ? this.eventFormTarget
+  //     : this.element.querySelector('form')
+
+  //   if (!form) {
+  //     console.warn("Form não encontrado para salvar dados.")
+  //     return
+  //   }
+
+  //   const formData = new FormData(form)
+  //   const eventData = this.getEventData() || {}
+
+  //   // Atualiza campos normais
+  //   formData.forEach((value, key) => {
+  //     if (key === 'event[banner]') return
+  //     const cleanKey = key.replace(/^event\[/, '').replace(/\]$/, '')
+  //     eventData[cleanKey] = value
+  //   })
+
+  //   // Processa banner (arquivo) — guarda preview e metadados, não o File
+  //   const bannerInput = form.querySelector('input[name="event[banner]"]')
+  //   if (bannerInput && bannerInput.files && bannerInput.files.length > 0) {
+  //     const file = bannerInput.files[0]
+  //     this.originalBannerFile = file
+
+  //     // Revoga object URL anterior para evitar memory leak
+  //     if (this._lastBannerObjectUrl) {
+  //       URL.revokeObjectURL(this._lastBannerObjectUrl)
+  //     }
+
+  //     const imageUrl = URL.createObjectURL(file)
+  //     this._lastBannerObjectUrl = imageUrl
+
+  //     eventData.bannerUrl = imageUrl
+  //     eventData.bannerName = file.name
+  //     eventData.bannerSize = file.size
+  //     eventData.hasBanner = true
+
+  //     console.log('Banner guardado (preview):', file.name)
+  //   } else {
+  //     // Mantém banner anterior se existir
+  //     if (!eventData.bannerUrl) {
+  //       eventData.hasBanner = false
+  //       this.originalBannerFile = null
+  //     }
+  //   }
+
+  //   this.setEventData(eventData)
+  //   console.log("Dados do evento salvos em sessionStorage:", eventData)
+  // }
+
+  // loadEventDataIfExists() {
+  //   const eventData = this.getEventData()
+  //   if (!eventData) return
+
+  //   const form = (this.hasEventFormTarget && this.eventFormTarget)
+  //     ? this.eventFormTarget
+  //     : this.element.querySelector('form')
+
+  //   if (!form) return
+
+  //   // Preenche inputs existentes no form
+  //   Object.entries(eventData).forEach(([key, value]) => {
+  //     // Ignora campos que são metadados de banner
+  //     if (key === "bannerUrl" || key === "bannerName" || key === "bannerSize") return
+
+  //     const input = form.querySelector(`[name="event[${key}]"]`)
+  //     if (input) {
+  //       try {
+  //         input.value = value
+  //       } catch (err) {
+  //         console.warn("Erro ao preencher input", key, err)
+  //       }
+  //     }
+  //   })
+
+  //   // Se houver preview de banner salvo, tente mostrar (se existir um elemento preview)
+  //   if (eventData.bannerUrl) {
+  //     if (this.hasSummaryEventBannerTarget) {
+  //       try {
+  //         const img = this.summaryEventBannerTarget
+  //         if (img.tagName && img.tagName.toLowerCase() === "img") {
+  //           img.src = eventData.bannerUrl
+  //         } else {
+  //           // se não for <img>, insere como background
+  //           img.style.backgroundImage = `url('${eventData.bannerUrl}')`
+  //         }
+  //       } catch (err) {
+  //         console.warn("Erro ao aplicar banner preview:", err)
+  //       }
+  //     }
+  //   }
+
+  //   console.log("Dados do evento carregados do sessionStorage.")
+  // }
+
+  // ===== GERENCIAMENTO DE ATIVIDADES (Agenda) =====
+  // getActivities() {
+  //   try {
+  //     const raw = sessionStorage.getItem(KEY_ACTIVITIES)
+  //     return raw ? JSON.parse(raw) : []
+  //   } catch (err) {
+  //     console.error("Erro ao parsear activities do sessionStorage:", err)
+  //     return []
+  //   }
+  // }
+
+  // setActivities(list) {
+  //   try {
+  //     sessionStorage.setItem(KEY_ACTIVITIES, JSON.stringify(list || []))
+  //   } catch (err) {
+  //     console.error("Erro ao gravar activities no sessionStorage:", err)
+  //   }
+  // }
+
+  // renderActivitiesList() {
+  //   if (!this.hasActivitiesContainerTarget) {
+  //     // nada a renderizar se não houver target
+  //     return
+  //   }
+
+  //   const container = this.activitiesContainerTarget
+  //   const activities = this.getActivities()
+
+  //   if (!activities || activities.length === 0) {
+  //     container.innerHTML = `<div class="text-muted">Nenhuma sessão adicionada</div>`
+  //     if (this.hasSummarySessionsCountTarget) this.summarySessionsCountTarget.textContent = "0"
+  //     return
+  //   }
+
+  //   // Render simplificado
+  //   container.innerHTML = activities.map((a, idx) => {
+  //     const title = a.title || a.name || "Sem título"
+  //     const speaker = a.speaker || ""
+  //     const local = a.local || ""
+  //     const start = a.start || ""
+  //     const end = a.end || ""
+  //     return `
+  //       <div class="card mb-2 activity-item" data-activity-index="${idx}">
+  //         <div class="card-body p-2 d-flex justify-content-between align-items-center">
+  //           <div>
+  //             <div class="fw-bold">${title}</div>
+  //             <small class="text-muted">${speaker} • ${local} • ${start}${end ? "–" + end : ""}</small>
+  //           </div>
+  //           <div class="btn-group">
+  //             <button type="button" class="btn btn-sm btn-outline-primary activity-edit-btn" data-index="${idx}">Editar</button>
+  //             <button type="button" class="btn btn-sm btn-outline-danger activity-remove-btn" data-index="${idx}">Remover</button>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     `
+  //   }).join("")
+
+  //   // Adiciona event listeners (usa handlers vinculados criados no connect)
+  //   container.querySelectorAll(".activity-edit-btn").forEach(btn => {
+  //     btn.removeEventListener("click", this._boundEditHandler)
+  //     btn.addEventListener("click", this._boundEditHandler)
+  //   })
+
+  //   container.querySelectorAll(".activity-remove-btn").forEach(btn => {
+  //     btn.removeEventListener("click", this._boundRemoveHandler)
+  //     btn.addEventListener("click", this._boundRemoveHandler)
+  //   })
+
+  //   if (this.hasSummarySessionsCountTarget) {
+  //     this.summarySessionsCountTarget.textContent = String(activities.length)
+  //   }
+  // }
+
+  // _openModal() {
+  //   if (!this.hasActivitiesModalTarget) {
+  //     console.warn("Modal de atividades não encontrado.")
+  //     return
+  //   }
+
+  //   // Se editingIndex está setado, preenche os campos com os dados existentes
+  //   if (this.editingIndex !== null && this.editingIndex !== undefined) {
+  //     const activities = this.getActivities()
+  //     const item = activities[this.editingIndex]
+  //     if (item) {
+  //       // Preenche campos do modal (proteções com hasXTarget)
+  //       if (this.hasActivityNameTarget) this.activityNameTarget.value = item.name || item.title || ""
+  //       if (this.hasActivityTitleTarget) this.activityTitleTarget.value = item.title || item.name || ""
+  //       if (this.hasActivityLocalTarget) this.activityLocalTarget.value = item.local || ""
+  //       if (this.hasActivitySpeakerTarget) this.activitySpeakerTarget.value = item.speaker || ""
+  //       if (this.hasActivityPeriodStartTarget) this.activityPeriodStartTarget.value = item.start || ""
+  //       if (this.hasActivityPeriodEndTarget) this.activityPeriodEndTarget.value = item.end || ""
+  //       if (this.hasActivityCertificateHoursTarget) this.activityCertificateHoursTarget.value = item.certificate_hours || ""
+  //       if (this.hasActivitySubscriptionsOpenTarget) this.activitySubscriptionsOpenTarget.checked = !!item.subscriptions_open
+  //     }
+  //   } else {
+  //     this.clearModalFields()
+  //   }
+
+  //   this.activitiesModalTarget.classList.remove("hidden")
+  // }
+
+  // _closeModal() {
+  //   if (!this.hasActivitiesModalTarget) return
+  //   this.activitiesModalTarget.classList.add("hidden")
+  //   this.clearModalFields()
+  //   this.editingIndex = null
+  // }
+
+  // clearModalFields() {
+  //   if (this.hasActivityNameTarget) this.activityNameTarget.value = ""
+  //   if (this.hasActivityTitleTarget) this.activityTitleTarget.value = ""
+  //   if (this.hasActivityLocalTarget) this.activityLocalTarget.value = ""
+  //   if (this.hasActivitySpeakerTarget) this.activitySpeakerTarget.value = ""
+  //   if (this.hasActivityPeriodStartTarget) this.activityPeriodStartTarget.value = ""
+  //   if (this.hasActivityPeriodEndTarget) this.activityPeriodEndTarget.value = ""
+  //   if (this.hasActivityCertificateHoursTarget) this.activityCertificateHoursTarget.value = ""
+  //   if (this.hasActivitySubscriptionsOpenTarget) this.activitySubscriptionsOpenTarget.checked = false
+  // }
+
+  // Chamado quando o botão "Salvar" do modal é clicado
+  // _addActivity(event) {
+  //   event && event.preventDefault && event.preventDefault()
+
+  //   const activities = this.getActivities()
+
+  //   // Lê campos do modal (com proteção)
+  //   const item = {
+  //     name: this.hasActivityNameTarget ? this.activityNameTarget.value.trim() : "",
+  //     title: this.hasActivityTitleTarget ? this.activityTitleTarget.value.trim() : "",
+  //     local: this.hasActivityLocalTarget ? this.activityLocalTarget.value.trim() : "",
+  //     speaker: this.hasActivitySpeakerTarget ? this.activitySpeakerTarget.value.trim() : "",
+  //     start: this.hasActivityPeriodStartTarget ? this.activityPeriodStartTarget.value : "",
+  //     end: this.hasActivityPeriodEndTarget ? this.activityPeriodEndTarget.value : "",
+  //     certificate_hours: this.hasActivityCertificateHoursTarget ? this.activityCertificateHoursTarget.value : "",
+  //     subscriptions_open: this.hasActivitySubscriptionsOpenTarget ? !!this.activitySubscriptionsOpenTarget.checked : false
+  //   }
+
+  //   if (this.editingIndex !== null && this.editingIndex !== undefined) {
+  //     // Atualiza atividade existente
+  //     activities[this.editingIndex] = item
+  //     this.editingIndex = null
+  //   } else {
+  //     // Adiciona nova
+  //     activities.push(item)
+  //   }
+
+  //   this.setActivities(activities)
+  //   this.renderActivitiesList()
+  //   this._closeModal()
+  // }
+
+  // _editActivity(event) {
+  //   // Pega índice do elemento clicado
+  //   const index = Number(event.currentTarget?.dataset?.index ?? event.target?.dataset?.index)
+  //   if (Number.isNaN(index)) {
+  //     console.warn("Índice inválido ao editar atividade:", event)
+  //     return
+  //   }
+  //   this.editingIndex = index
+  //   this._openModal()
+  // }
+
+  // _removeActivity(event) {
+  //   const index = Number(event.currentTarget?.dataset?.index ?? event.target?.dataset?.index)
+  //   if (Number.isNaN(index)) {
+  //     console.warn("Índice inválido ao remover atividade:", event)
+  //     return
+  //   }
+  //   const activities = this.getActivities()
+  //   activities.splice(index, 1)
+  //   this.setActivities(activities)
+  //   this.renderActivitiesList()
+  // }
+
+  // ===== HELPERS PARA EVENT DATA =====
+  // getEventData() {
+  //   const raw = sessionStorage.getItem(KEY_EVENT_DATA)
+  //   if (!raw) return null
+
+  //   try {
+  //     return JSON.parse(raw)
+  //   } catch (err) {
+  //     console.error("Erro ao parsear eventData do session", err)
+  //   }
+  // }
+
+  // setEventData(payload) {
+  //   try {
+  //     sessionStorage.setItem(KEY_EVENT_DATA, JSON.stringify(payload || {}))
+  //   } catch (err) {
+  //     console.error("Erro ao gravar eventData no sessionStorage:", err)
+  //   }
+  // }
+
+  // // ===== UPDATE DO RESUMO (Publicar) =====
+  // updateEventSummary() {
+  //   const eventData = this.getEventData() || {}
+  //   const activities = this.getActivities()
+
+  //   // Nome
+  //   if (this.hasSummaryEventNameTarget) {
+  //     this.summaryEventNameTarget.textContent = eventData.title || eventData.name || "—"
+  //   }
+
+  //   // Data (tenta usar campos conhecidos)
+  //   if (this.hasSummaryEventDateTarget) {
+  //     const date = eventData.date || eventData.start_date || eventData.event_date || ""
+  //     this.summaryEventDateTarget.textContent = date || "—"
+  //   }
+
+  //   // Local
+  //   if (this.hasSummaryEventLocationTarget) {
+  //     this.summaryEventLocationTarget.textContent = eventData.location || "—"
+  //   }
+
+  //   // Responsável / email
+  //   if (this.hasSummaryEventResponsibleTarget) {
+  //     this.summaryEventResponsibleTarget.textContent = eventData.responsible || eventData.owner || "—"
+  //   }
+  //   if (this.hasSummaryEventEmailTarget) {
+  //     this.summaryEventEmailTarget.textContent = eventData.contact_email || eventData.email || "—"
+  //   }
+
+  //   // Banner
+  //   if (this.hasSummaryEventBannerTarget) {
+  //     try {
+  //       const el = this.summaryEventBannerTarget
+  //       if (el.tagName && el.tagName.toLowerCase() === "img") {
+  //         el.src = eventData.bannerUrl || ""
+  //       } else {
+  //         el.style.backgroundImage = eventData.bannerUrl ? `url('${eventData.bannerUrl}')` : ""
+  //       }
+  //     } catch (err) {
+  //       console.warn("Erro ao atualizar summaryEventBannerTarget:", err)
+  //     }
+  //   }
+
+  //   // Sessões / agenda summary
+  //   if (this.hasSummarySessionsCountTarget) {
+  //     this.summarySessionsCountTarget.textContent = String((activities && activities.length) || 0)
+  //   }
+
+  //   if (this.hasSummaryAgendaTarget) {
+  //     if (!activities || activities.length === 0) {
+  //       this.summaryAgendaTarget.innerHTML = "<div class='text-muted'>Nenhuma sessão</div>"
+  //     } else {
+  //       // Monta uma lista simples para o resumo
+  //       const html = activities.map(a => {
+  //         const title = a.title || a.name || "Sem título"
+  //         const speaker = a.speaker ? ` — ${a.speaker}` : ""
+  //         const start = a.start ? ` (${a.start}${a.end ? "–" + a.end : ""})` : ""
+  //         return `<div class="summary-session"><strong>${title}</strong>${speaker}<span class="text-muted">${start}</span></div>`
+  //       }).join("")
+  //       this.summaryAgendaTarget.innerHTML = html
+  //     }
+  //   }
+
+  //   // Palestrantes: extrai lista única de speakers
+  //   if (this.hasSummarySpeakersCountTarget || this.hasSummarySpeakersTarget) {
+  //     const speakers = new Set()
+  //     ;(activities || []).forEach(a => {
+  //       if (a.speaker) {
+  //         // pode ser uma string com vírgula — basic split, trim
+  //         a.speaker.split?.(",")?.forEach(s => {
+  //           const t = String(s).trim()
+  //           if (t) speakers.add(t)
+  //         }) || speakers.add(a.speaker)
+  //       }
+  //     })
+  //     const speakersArr = Array.from(speakers)
+  //     if (this.hasSummarySpeakersCountTarget) this.summarySpeakersCountTarget.textContent = String(speakersArr.length)
+  //     if (this.hasSummarySpeakersTarget) this.summarySpeakersTarget.innerHTML = speakersArr.length ? `<ul>${speakersArr.map(s => `<li>${s}</li>`).join("")}</ul>` : "<div class='text-muted'>Nenhum palestrante</div>"
+  //   }
+
+  //   // Status de completude — heurística simples
+  //   const totalChecks = 3 // ex: básico, agenda, ingressos
+  //   let done = 0
+  //   // Básico: título, data e local
+  //   if (eventData.title && (eventData.date || eventData.start_date) && (eventData.location || eventData.venue)) done++
+  //   // Agenda: pelo menos 1 atividade
+  //   if ((activities || []).length > 0) done++
+  //   // Tickets: checagem minimal (configuração de ingressos não implementada)
+  //   // done stays
+
+  //   const percent = Math.round((done / totalChecks) * 100)
+  //   if (this.hasCompletionProgressTarget) {
+  //     try {
+  //       this.completionProgressTarget.style.width = `${percent}%`
+  //     } catch (err) {
+  //       // caso seja um elemento sem style (ex: <span>), configura texto fallback
+  //       this.completionProgressTarget.textContent = `${percent}%`
+  //     }
+  //   }
+  //   if (this.hasCompletionPercentageTarget) {
+  //     this.completionPercentageTarget.textContent = `${percent}%`
+  //   }
+
+  //   // Event status (placeholder)
+  //   if (this.hasEventStatusTarget) {
+  //     this.eventStatusTarget.textContent = eventData.published ? "Publicado" : "Rascunho"
+  //   }
+  // }
+
+  // ===== MÉTODOS AUXILIARES PARA OS MANAGERS =====
+
+  // Getters para os managers acessarem os targets (SEM conflito com Stimulus)
+  getTargetsMap() {
+    return {
+      tabButton: this.tabButtonTargets,
+      tabContent: this.tabContentTargets,
+      activitiesContainer: this.activitiesContainerTarget,
+      activitiesModal: this.activitiesModalTarget,
+      eventForm: this.hasEventFormTarget ? this.eventFormTarget : null,
+      activityName: this.activityNameTarget,
+      activityTitle: this.activityTitleTarget,
+      activityLocal: this.activityLocalTarget,
+      activitySpeaker: this.activitySpeakerTarget,
+      activityPeriodStart: this.activityPeriodStartTarget,
+      activityPeriodEnd: this.activityPeriodEndTarget,
+      activityCertificateHours: this.activityCertificateHoursTarget,
+      activitySubscriptionsOpen: this.activitySubscriptionsOpenTarget,
+      speakersList: this.speakersListTarget,
+      previewLocation: this.previewLocationTarget,
+      previewTime: this.previewTimeTarget,
+      previewDate: this.previewDateTarget,
     }
   }
 
-  // Recupera o arquivo de banner original do formulário
-  getBannerFile() {
-    // Primeiro tenta pegar o arquivo guardado na propriedade
-    if (this.originalBannerFile) {
-      console.log('Arquivo de banner encontrado na propriedade:', this.originalBannerFile.name)
-      return this.originalBannerFile
+  // Método para managers acessarem o estado
+  getState() {
+    return {
+      editingIndex: this.editingIndex,
+      currentTab: this.currentTab,
+      originalBannerFile: this.originalBannerFile
     }
-    
-    // Se não tem na propriedade, tenta pegar do formulário
-    
-    console.log('nenhum arquivo de banner encontrado')
-    return null
-    
   }
 
-  // Método para debugar o estado do sessionStorage
-  debugSessionStorage() {
-    console.log('=== DEBUG SESSION STORAGE ===')
-    console.log('activities (string):', sessionStorage.getItem('activities'))
-    console.log('eventData (string):', sessionStorage.getItem('eventData'))
-    
-    try {
-      const activities = JSON.parse(sessionStorage.getItem('activities') || '[]')
-      console.log('activities (parsed):', activities)
-      console.log('É array?', Array.isArray(activities))
-      console.log('Quantidade:', activities.length)
-    } catch (e) {
-      console.error('Erro ao parsear activities:', e)
-    }
-    
-    console.log('=== FIM DEBUG ===')
+  // Método para managers modificarem o estado
+  setState(newState) {
+    Object.assign(this, newState)
   }
 
+  // Helpers de formatação (delegam para Utils)
+  formatTime(dateString) {
+    return this.utils.formatTime(dateString)
+  }
+
+  formatDate(dateString) {
+    return this.utils.formatDate(dateString)
+  }
+
+  formatFileSize(bytes) {
+    return this.utils.formatFileSize(bytes)
+  }
+
+  // // ===== STUBS / BACKEND (seguro) =====
+  // _publishEvent() {
+  //   console.log("Ação publicar chamada — implemente envio ao backend aqui.")
+  //   // exemplo: coletar this.getEventData() + activities e enviar
+  // }
+
+  // _saveDraft() {
+  //   console.log("Salvar rascunho (local) — se quiser enviar ao backend implemente aqui.")
+  // }
+
+  // _previewEvent() {
+  //   console.log("Preview (local) — implementar rota de preview se quiser.")
+  // }
+
+  // _exportEvent() {
+  //   console.log("Exportar evento — implementar exportador (JSON / PDF) se quiser.")
+  // }
+
+  // _previewAgenda() {
+  //   console.log("Preview da agenda — implementar view ou modal conforme necessário.")
+  // }
 }
-
